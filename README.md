@@ -67,4 +67,3 @@ export default tseslint.config([
   },
 ]);
 ```
-push test
