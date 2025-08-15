@@ -13,16 +13,24 @@ export type PassItemProps = {
 }
 
 const DurationItem = ({ value, setValue, unit }: { value: number, setValue: (value: number) => void, unit: string }) => {
-    const handleValueChange = (delta: number) => {
+    const handleValueAdd = (delta: number) => {
         const newValue = value + delta;
-        setValue(Math.max(newValue, 0));
+        handleValueChange(newValue);
+    }
+
+    const handleValueChange = (newValue: number) => {
+        if (!isNaN(newValue)) {
+            setValue(Math.max(newValue, 0));
+        } else {
+            setValue(0);
+        }
     }
 
     return (
         <Group gap={"xs"}>
             <div className={styles.durationButtonsRoot} >
-                <button type='button' onClick={() => handleValueChange(1)}><MdArrowDropUp /></button>
-                <button type='button' onClick={() => handleValueChange(-1)}><MdArrowDropDown /></button>
+                <button type='button' onClick={() => handleValueAdd(1)}><MdArrowDropUp /></button>
+                <button type='button' onClick={() => handleValueAdd(-1)}><MdArrowDropDown /></button>
             </div>
             <Input type='number'
                 value={value === undefined || value === 0 ? '' : value}
@@ -32,12 +40,7 @@ const DurationItem = ({ value, setValue, unit }: { value: number, setValue: (val
                 // なぜかclassNamesのtextAlignが効かないので、stylesで指定
                 styles={{ input: { textAlign: 'right' } }}
                 onChange={(e) => {
-                    const newValue = parseInt(e.currentTarget.value, 10);
-                    if (!isNaN(newValue)) {
-                        setValue(newValue);
-                    } else {
-                        setValue(0);
-                    }
+                    handleValueChange(parseInt(e.currentTarget.value, 10));
                 }}
             />
         </Group>
@@ -54,7 +57,7 @@ const PassItem = ({ pass, setPass, deletePass }: PassItemProps) => {
     };
 
     const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const newPrice = parseInt(e.currentTarget.value, 10);
+        const newPrice = Math.max(parseInt(e.currentTarget.value, 10), 0);
         if (!isNaN(newPrice)) {
             setPass({ ...pass, price: newPrice });
         } else {
