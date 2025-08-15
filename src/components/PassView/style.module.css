@@ -1,0 +1,18 @@
+.root {
+  position: sticky;
+  overflow: hidden;
+}
+
+.titleRoot {
+  position: sticky;
+  top: 0;
+}
+
+.passItemListRoot {
+  height: calc(100vh - 200px);
+  overflow: auto;
+}
+
+.addButtonRoot {
+  display: flex;
+}
