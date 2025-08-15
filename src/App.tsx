@@ -1,22 +1,25 @@
-import { AppShell, AppShellAside, Text } from '@mantine/core'
+import { AppShell, Flex, Text } from '@mantine/core'
 import './App.css'
 import PassView from './components/PassView'
+import CalendarView from './components/CalendarView'
+import { HEADER_HEIGHT } from './utils/constants'
 
 function App() {
 
   return (
     <>
       <AppShell
-        header={{ height: 60 }}
+        header={{ height: HEADER_HEIGHT }}
+        aside={{ width: "max-content", breakpoint: 'sm' }}
       >
         <AppShell.Header p={"md"}>
           <Text size=''>Teiki Calc</Text>
         </AppShell.Header>
-        <AppShellAside p={"md"} bg={"green"}>
-          <PassView />
-        </AppShellAside>
         <AppShell.Main>
-          <Text>Main Content</Text>
+          <Flex mih={`calc(100vh - ${HEADER_HEIGHT}px)`}>
+            <CalendarView />
+            <PassView />
+          </Flex>
         </AppShell.Main>
       </AppShell>
     </>
