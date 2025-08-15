@@ -1,12 +1,15 @@
-import { Card, Group, Input, Stack, Text } from '@mantine/core'
+import { Button, Card, Group, Input, Stack, Text } from '@mantine/core'
 import type Pass from '../../utils/Pass'
 import { DateDurationJP } from '../../utils/DateDuration'
 import styles from "./style.module.css"
-import { MdArrowDropDown, MdArrowDropUp } from 'react-icons/md'
+import { MdArrowDropDown, MdArrowDropUp, MdDelete } from 'react-icons/md'
+import { useState } from 'react'
+import { AnimatePresence, motion } from 'motion/react'
 
 export type PassItemProps = {
     pass: Pass
     setPass: (pass: Pass) => void
+    deletePass: () => void
 }
 
 const DurationItem = ({ value, setValue, unit }: { value: number, setValue: (value: number) => void, unit: string }) => {
@@ -41,7 +44,9 @@ const DurationItem = ({ value, setValue, unit }: { value: number, setValue: (val
     )
 }
 
-const PassItem = ({ pass, setPass }: PassItemProps) => {
+const PassItem = ({ pass, setPass, deletePass }: PassItemProps) => {
+    const [hovered, setHovered] = useState(false);
+
     const { duration, price } = pass;
 
     const handleDurationChange = (newDuration: Partial<Pass['duration']>) => {
@@ -58,30 +63,56 @@ const PassItem = ({ pass, setPass }: PassItemProps) => {
     }
 
     return (
-        <Card shadow='sm'>
-            <Stack>
-                <Group>
-                    {Object.entries(duration).map(([key, value]) => (
-                        <DurationItem
-                            key={key}
-                            value={value}
-                            setValue={(newValue) => handleDurationChange({ [key]: newValue })}
-                            unit={DateDurationJP[key as keyof typeof DateDurationJP]}
+        <motion.div
+            initial={{ opacity: 0, x: 50 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 50 }}
+            layoutId={pass.id}
+        >
+            <Card shadow='sm' onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
+                <Stack>
+                    <Group>
+                        {Object.entries(duration).map(([key, value]) => (
+                            <DurationItem
+                                key={key}
+                                value={value}
+                                setValue={(newValue) => handleDurationChange({ [key]: newValue })}
+                                unit={DateDurationJP[key as keyof typeof DateDurationJP]}
+                            />
+                        ))}
+                    </Group>
+                    <Group>
+                        <AnimatePresence>
+                            {hovered &&
+                                <motion.div
+                                    className={styles.deleteButtonRoot}
+
+                                    initial={{ opacity: 0, x: -10 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    exit={{ opacity: 0, x: -10 }}
+                                >
+                                    <Button variant='outline' c="red" color='red'
+                                        onClick={() => deletePass()}
+                                    >
+                                        <MdDelete size="1.3rem" />
+                                    </Button>
+                                </motion.div>}
+                        </AnimatePresence>
+                        <Input
+                            variant='filled'
+                            type='number'
+                            placeholder='価格を入力'
+                            value={price === undefined || price === 0 ? '' : price}
+                            onChange={handlePriceChange}
+                            rightSection={<Text size='sm'>円</Text>}
+                            flex={1}
+                            classNames={{ input: styles.inputInput }}
+                            styles={{ input: { textAlign: 'right' } }}
                         />
-                    ))}
-                </Group>
-                <Input
-                    variant='filled'
-                    type='number'
-                    placeholder='価格を入力'
-                    value={price === undefined || price === 0 ? '' : price}
-                    onChange={handlePriceChange}
-                    rightSection={<Text size='sm'>円</Text>}
-                    classNames={{ input: styles.inputInput }}
-                    styles={{ input: { textAlign: 'right' } }}
-                />
-            </Stack>
-        </Card>
+                    </Group>
+                </Stack>
+            </Card>
+        </motion.div>
     )
 }
 

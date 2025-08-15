@@ -6,6 +6,6 @@ export default interface Pass {
   price: number;
 }
 
-export const createPassId = (num: number) => {
+export const createPassId = (num: number | string) => {
   return `pass-${num}`;
 };

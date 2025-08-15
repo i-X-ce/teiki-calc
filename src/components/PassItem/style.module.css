@@ -6,6 +6,12 @@
   width: 100px;
 }
 
+.deleteButtonRoot {
+  position: absolute;
+  left: 1rem;
+  z-index: 2;
+}
+
 .durationButtonsRoot {
   display: flex;
   flex-direction: column;
@@ -25,4 +31,8 @@
   > button:active {
     top: 1px;
   }
+}
+
+.inputPriceRoot {
+  flex: 1;
 }
