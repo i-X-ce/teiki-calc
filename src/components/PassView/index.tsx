@@ -1,9 +1,11 @@
-import { Button, Divider, Stack, Text } from '@mantine/core'
+import { Button, Divider, ScrollArea, Stack, Text } from '@mantine/core'
 import type Pass from '../../utils/Pass'
 import { createPassId } from '../../utils/Pass'
 import { useState } from 'react'
 import PassItem from '../PassItem'
 import { AnimatePresence } from 'motion/react'
+import styles from './style.module.css'
+import { HEADER_HEIGHT } from '../../utils/constants'
 
 const INIT_PASS: Pass[] = [
   {
@@ -52,30 +54,36 @@ const PassView = () => {
   }
 
   return (
-    <Stack >
-      <Text c={"white"} size="lg">定期代</Text>
+    <Stack p={"md"} bg={"green"} top={HEADER_HEIGHT} h={`calc(100vh - ${HEADER_HEIGHT}px)`} justify='space-between' className={styles.root}>
+      <Stack pos={"relative"}>
 
-      <Divider color='green.4' />
+        <Text c={"white"} size="lg">定期代</Text>
+        <Divider color='green.4' />
+        <ScrollArea className={styles.passItemListRoot} scrollbars="y">
+          <Stack >
+            <AnimatePresence>
+              {passList.map((pass) => (
+                <PassItem key={pass.id} pass={pass} setPass={(pass) => {
+                  setPassList((prev) => prev.map(p => p.id === pass.id ? pass : p));
+                }}
+                  deletePass={() => {
+                    if (passList.length <= 1) return;
+                    setPassList((prev) => prev.filter(p => p.id !== pass.id));
+                  }}
+                />
+              ))}
+            </AnimatePresence>
+          </Stack>
+        </ScrollArea>
+      </Stack>
 
-      <Stack>
-        <AnimatePresence>
-          {passList.map((pass) => (
-            <PassItem key={pass.id} pass={pass} setPass={(pass) => {
-              setPassList((prev) => prev.map(p => p.id === pass.id ? pass : p));
-            }}
-              deletePass={() => {
-                if (passList.length <= 1) return;
-                setPassList((prev) => prev.filter(p => p.id !== pass.id));
-              }}
-            />
-          ))}
-        </AnimatePresence>
-        <Button variant='outline' color='white'
+      <div className={styles.addButtonRoot}>
+        <Button variant='outline' color='white' flex={1}
           onClick={handleAddPass}
         >
           追加+
         </Button>
-      </Stack>
+      </div>
     </Stack >
   )
 }
