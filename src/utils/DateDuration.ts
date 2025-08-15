@@ -3,3 +3,9 @@ export default interface DateDuration {
   month: number;
   day: number;
 }
+
+export const DateDurationJP: Record<keyof DateDuration, string> = {
+  year: "年",
+  month: "月",
+  day: "日",
+};

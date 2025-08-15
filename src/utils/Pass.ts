@@ -5,3 +5,7 @@ export default interface Pass {
   duration: DateDuration;
   price: number;
 }
+
+export const createPassId = (num: number) => {
+  return `pass-${num}`;
+};

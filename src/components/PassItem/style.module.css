@@ -1,0 +1,28 @@
+.inputInput {
+  text-align: right;
+}
+
+.inputWrapper {
+  width: 100px;
+}
+
+.durationButtonsRoot {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+
+  > button {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 1rem;
+
+    border: none;
+    background: transparent;
+  }
+
+  > button:active {
+    top: 1px;
+  }
+}

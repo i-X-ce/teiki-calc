@@ -1,5 +1,6 @@
 import { AppShell, AppShellAside, Text } from '@mantine/core'
 import './App.css'
+import PassView from './components/PassView'
 
 function App() {
 
@@ -12,6 +13,7 @@ function App() {
           <Text size=''>Teiki Calc</Text>
         </AppShell.Header>
         <AppShellAside p={"md"} bg={"green"}>
+          <PassView />
         </AppShellAside>
         <AppShell.Main>
           <Text>Main Content</Text>
