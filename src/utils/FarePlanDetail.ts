@@ -1,4 +1,4 @@
-import { addDays, subDays, subMonths, subYears } from "date-fns";
+import { subDays, subMonths, subYears } from "date-fns";
 import type Pass from "./Pass";
 
 export type UnPassType = Pass | undefined;
@@ -47,7 +47,6 @@ export default class FarePlanDetail {
     purchasedDate = subDays(purchasedDate, this.purchasedPass.duration.day);
     purchasedDate = subMonths(purchasedDate, this.purchasedPass.duration.month);
     purchasedDate = subYears(purchasedDate, this.purchasedPass.duration.year);
-    purchasedDate = addDays(purchasedDate, 1);
     return purchasedDate;
   }
 }
