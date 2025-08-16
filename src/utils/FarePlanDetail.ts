@@ -1,4 +1,4 @@
-import { subDays, subMonths, subYears } from "date-fns";
+import { addDays, sub } from "date-fns";
 import type Pass from "./Pass";
 
 export type UnPassType = Pass | undefined;
@@ -39,14 +39,17 @@ export default class FarePlanDetail {
     this.totalAmount = totalAmount;
   }
 
-  public getPurchasedDate(): UnDateType {
+  // 購入したパスの開始日を取得
+  // displayがtrueの場合は表示用のフォーマット(日+1)で返す
+  public getPurchasedDate(display?: boolean): UnDateType {
     if (!this.purchasedPass) {
       return undefined;
     }
     let purchasedDate = new Date(this.date);
-    purchasedDate = subDays(purchasedDate, this.purchasedPass.duration.day);
-    purchasedDate = subMonths(purchasedDate, this.purchasedPass.duration.month);
-    purchasedDate = subYears(purchasedDate, this.purchasedPass.duration.year);
+    purchasedDate = sub(purchasedDate, { ...this.purchasedPass.duration });
+    if (display) {
+      purchasedDate = addDays(purchasedDate, 1); // 表示用に1日加算
+    }
     return purchasedDate;
   }
 }

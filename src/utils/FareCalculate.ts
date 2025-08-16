@@ -1,4 +1,4 @@
-import { subDays, subMonths, subYears } from "date-fns";
+import { startOfDay, sub, subDays } from "date-fns";
 import FarePlanDetail, { type UnPassType } from "./FarePlanDetail";
 import type Pass from "./Pass";
 
@@ -9,6 +9,9 @@ export default function fareCalculate(
   holidays: Set<string> // Dateの文字列表現をキーにしたSet
 ): FarePlanDetail[] {
   const result: FarePlanDetail[] = [];
+
+  startDate = startOfDay(startDate);
+  endDate = startOfDay(endDate);
 
   if (startDate > endDate) {
     return result;
@@ -41,9 +44,7 @@ export default function fareCalculate(
     };
     for (const pass of passes) {
       let prevDate = new Date(date.getDate());
-      prevDate = subDays(prevDate, pass.duration.day);
-      prevDate = subMonths(prevDate, pass.duration.month);
-      prevDate = subYears(prevDate, pass.duration.year);
+      prevDate = sub(prevDate, { ...pass.duration });
       const prevFarePlanDetail = result.find(
         (r) => r.getDate().toDateString() === prevDate.toDateString()
       );
@@ -57,17 +58,37 @@ export default function fareCalculate(
     date.setTotalAmount(minAmountPass.amount);
   }
 
-  return result;
+  const resultMap: Record<string, FarePlanDetail> = result.reduce(
+    (acc, detail) => {
+      const key = detail.getDate().toString();
+      acc[key] = detail;
+      return acc;
+    },
+    {} as Record<string, FarePlanDetail>
+  );
+
+  let purchaseList: FarePlanDetail[] = [];
+  for (let currentDate = new Date(endDate); currentDate >= startDate; ) {
+    const purchasedDate = resultMap[currentDate.toString()];
+    purchaseList.push(purchasedDate);
+    currentDate = purchasedDate.getPurchasedDate() || subDays(currentDate, 1);
+  }
+  purchaseList = purchaseList
+    .reverse()
+    .filter((detail) => detail.getPurchasedPass() !== undefined)
+    .map((detail) => detail);
+
+  return purchaseList;
 }
 
 // テスト用
-export function calcTest() {
+export function fareCalculateTest() {
   const startDate = new Date("2023-01-01");
   const endDate = new Date("2023-01-12");
   const passes = [
-    { id: "pass1", duration: { year: 0, month: 0, day: 1 }, price: 500 },
-    { id: "pass2", duration: { year: 0, month: 0, day: 2 }, price: 800 },
-    { id: "pass3", duration: { year: 0, month: 0, day: 3 }, price: 1100 },
+    { id: "pass1", duration: { years: 0, months: 0, days: 1 }, price: 500 },
+    { id: "pass2", duration: { years: 0, months: 0, days: 2 }, price: 800 },
+    { id: "pass3", duration: { years: 0, months: 0, days: 3 }, price: 1100 },
   ];
   const holidays = new Set(
     [
@@ -84,7 +105,7 @@ export function calcTest() {
         date: detail.getDate().toDateString(),
         pass: detail.getPurchasedPass()?.id,
         amount: detail.getTotalAmount(),
-        purchasedDate: detail.getPurchasedDate()?.toDateString(),
+        purchasedDate: detail.getPurchasedDate(true)?.toDateString(),
       };
     })
   );

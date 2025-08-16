@@ -3,7 +3,7 @@ import { addDays, addMonths, differenceInMonths, format, startOfDay, startOfMont
 import { useCallback, useState } from 'react'
 import CalendarUnit from '../CalendarUnit'
 import { usePass } from '../PassProvider'
-import fareCalculate from '../../utils/FareCalculate'
+import fareCalculate, { fareCalculateTest } from '../../utils/FareCalculate'
 
 type StartEndDateProps = {
     start: Date
@@ -104,6 +104,7 @@ function CalendarView() {
     const handleClickCalc = () => {
         const result = fareCalculate(startEndDate.start, startEndDate.end, passList, holidaysSet)
         console.log(result);
+        fareCalculateTest(); // テスト用の関数を呼び出す
     }
 
     return (

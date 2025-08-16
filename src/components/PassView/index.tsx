@@ -15,9 +15,9 @@ const PassView = () => {
     const newPass: Pass = {
       id: createPassId(`${Date.now().toString()}_${passList.length}`),
       duration: {
-        year: 0,
-        month: 1,
-        day: 0
+        years: 0,
+        months: 1,
+        days: 0
       },
       price: 1000
     }
