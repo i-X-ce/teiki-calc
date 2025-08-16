@@ -12,6 +12,7 @@ export const INIT_PASS: Pass[] = [
       days: 1,
     },
     price: 500,
+    isReturnTicket: true,
   },
   {
     id: createPassId(1),

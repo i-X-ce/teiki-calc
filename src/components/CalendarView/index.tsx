@@ -210,7 +210,7 @@ function CalendarView() {
                                                 {`合計: ${detail.getTotalAmount()}円`}
                                             </Text>
                                             <Text c={"green"} size='sm'>
-                                                + {pass.price}円
+                                                + {pass.price}円{pass.isReturnTicket ? " × 2" : ""}
                                             </Text>
                                         </Group>
                                     </TimelineItem>

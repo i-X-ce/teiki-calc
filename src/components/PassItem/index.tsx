@@ -1,10 +1,11 @@
-import { Button, Card, Group, Input, Stack, Text } from '@mantine/core'
+import { Button, Card, Checkbox, Group, Input, Stack, Text } from '@mantine/core'
 import type Pass from '../../utils/Pass'
 import { DateDurationJP } from '../../utils/DateDuration'
 import styles from "./style.module.css"
 import { MdArrowDropDown, MdArrowDropUp, MdDelete } from 'react-icons/md'
 import { useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
+import { RiArrowTurnForwardFill } from 'react-icons/ri'
 
 export type PassItemProps = {
     pass: Pass
@@ -65,6 +66,12 @@ const PassItem = ({ pass, setPass, deletePass }: PassItemProps) => {
         }
     }
 
+    const toggleIsReturnTicket = () => {
+        console.log(pass)
+        const isReturnTicket = !pass.isReturnTicket;
+        setPass({ ...pass, isReturnTicket });
+    }
+
     return (
         <motion.div
             initial={{ opacity: 0, x: 50 }}
@@ -111,6 +118,12 @@ const PassItem = ({ pass, setPass, deletePass }: PassItemProps) => {
                             flex={1}
                             classNames={{ input: styles.inputInput }}
                             styles={{ input: { textAlign: 'right' } }}
+                        />
+                        <Checkbox icon={({ className }) => <RiArrowTurnForwardFill className={className} />}
+                            checked={pass.isReturnTicket}
+                            onChange={() => {
+                                toggleIsReturnTicket()
+                            }}
                         />
                     </Group>
                 </Stack>

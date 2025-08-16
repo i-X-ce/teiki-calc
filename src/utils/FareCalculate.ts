@@ -48,7 +48,9 @@ export default function fareCalculate(
       const prevFarePlanDetail = result.find(
         (r) => r.getDate().toDateString() === prevDate.toDateString()
       );
-      const amount = (prevFarePlanDetail?.getTotalAmount() || 0) + pass.price;
+      const amount =
+        (prevFarePlanDetail?.getTotalAmount() || 0) +
+        pass.price * (pass.isReturnTicket ? 2 : 1);
       if (amount < minAmountPass.amount) {
         minAmountPass.pass = pass;
         minAmountPass.amount = amount;
