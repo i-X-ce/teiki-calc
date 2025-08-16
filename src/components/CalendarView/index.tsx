@@ -1,5 +1,5 @@
 import { Button, Divider, Group, Input, InputWrapper, Stack, Text } from '@mantine/core'
-import { addDays, addMonths, differenceInMonths, format, subDays } from 'date-fns'
+import { addDays, addMonths, differenceInMonths, format, startOfMonth, subDays } from 'date-fns'
 import { useEffect, useState } from 'react'
 import CalendarUnit from '../CalendarUnit'
 
@@ -135,7 +135,7 @@ function CalendarView() {
 
             {/* カレンダー */}
             <Group align='stretch'>
-                {Array.from({ length: differenceInMonths(startEndDate.end, startEndDate.start) + 1 }).map((_, i) => {
+                {Array.from({ length: differenceInMonths(startOfMonth(startEndDate.end), startOfMonth(startEndDate.start)) + 1 }).map((_, i) => {
                     const date = addMonths(startEndDate.start, i);
                     const month = date.getMonth() + 1;
                     const year = date.getFullYear();

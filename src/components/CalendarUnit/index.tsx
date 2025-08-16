@@ -1,4 +1,5 @@
 import { Button, Grid, GridCol, Paper, Stack, Text } from "@mantine/core";
+import { isAfter, isBefore, startOfDay } from "date-fns";
 
 export type CalendarUnitProps = {
     year: number;
@@ -33,7 +34,9 @@ const CalendarUnit = ({ year, month, start, end, holidaysSet, onClick }: Calenda
                     {days.map((day, index) => (
                         <GridCol key={index} span={1}>
                             <Button
-                                disabled={day < start || day > end}
+                                disabled={
+                                    isBefore(startOfDay(day), startOfDay(start)) ||
+                                    isAfter(startOfDay(day), startOfDay(end))}
                                 variant={!holidaysSet.has(day.toDateString()) ? 'filled' : 'outline'}
                                 onClick={() => onClick(day)}
                                 p={"xs"}
