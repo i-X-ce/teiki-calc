@@ -1,26 +1,40 @@
 import { Button, Divider, Group, Input, InputWrapper, Stack, Text } from '@mantine/core'
-import { addDays, addMonths, differenceInMonths, format, startOfMonth, subDays } from 'date-fns'
-import { useEffect, useState } from 'react'
+import { addDays, addMonths, differenceInMonths, format, startOfDay, startOfMonth, subDays } from 'date-fns'
+import { useCallback, useState } from 'react'
 import CalendarUnit from '../CalendarUnit'
 
-type StartEndProps = {
+type StartEndDateProps = {
     start: Date
     end: Date
 }
 
 function CalendarView() {
     // 開始日と終了日
-    const [startEndDate, setStartEndDate] = useState<StartEndProps>({
-        start: new Date(Date.now()),
-        end: new Date(addMonths(Date.now(), 6)) // 6か月後,
+    const [startEndDate, setStartEndDate] = useState<StartEndDateProps>({
+        start: new Date(startOfDay(Date.now())),
+        end: new Date(startOfDay(addMonths(Date.now(), 6))) // 6か月後,
     })
     // 通勤日
     const [selectedDays, setSelectedDays] = useState<Boolean[]>([true, false, false, false, false, false, true])
 
-    const [holidaysSet, setHolidaysSet] = useState<Set<string>>(new Set())
+    // 初期化時に休日セットを作成するコールバック
+    const initHolidaysSet = useCallback((newStartEndDate: StartEndDateProps) => {
+        const newHolidaysSet = new Set<string>();
+        for (let currentDate = new Date(newStartEndDate.start);
+            currentDate <= newStartEndDate.end;
+            currentDate = addDays(currentDate, 1)) {
+            const dayIndex = currentDate.getDay();
+            if (selectedDays[dayIndex]) {
+                newHolidaysSet.add(currentDate.toDateString());
+            }
+        }
+        return newHolidaysSet;
+    }, [startEndDate])
+    // 休日セットのstate
+    const [holidaysSet, setHolidaysSet] = useState<Set<string>>(initHolidaysSet(startEndDate))
 
     // 開始日と終了日の変更ハンドラー
-    const handleStartEndDateChange = (e: React.ChangeEvent<HTMLInputElement>, startEndType: keyof StartEndProps) => {
+    const handleStartEndDateChange = (e: React.ChangeEvent<HTMLInputElement>, startEndType: keyof StartEndDateProps) => {
         const newDate = new Date(e.target.value)
         setStartEndDate(prev => {
             let newStart = prev.start, newEnd = prev.end;
@@ -39,10 +53,12 @@ function CalendarView() {
                     newStart = newEnd;
                 }
             }
-            return {
+            const newStartEndDate: StartEndDateProps = {
                 start: newStart,
                 end: newEnd
             }
+            setHolidaysSet(initHolidaysSet(newStartEndDate));
+            return newStartEndDate
         })
     }
 
@@ -80,19 +96,7 @@ function CalendarView() {
         })
     }
 
-    useEffect(() => {
-        // 通勤日をholidaysSetに設定
-        const newHolidaysSet = new Set<string>();
-        for (let currentDate = new Date(startEndDate.start);
-            currentDate <= startEndDate.end;
-            currentDate = addDays(currentDate, 1)) {
-            const dayIndex = currentDate.getDay();
-            if (selectedDays[dayIndex]) {
-                newHolidaysSet.add(currentDate.toDateString());
-            }
-        }
-        setHolidaysSet(newHolidaysSet);
-    }, [])
+
 
     return (
         <Stack p={"md"} flex={1}>

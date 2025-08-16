@@ -1,5 +1,6 @@
 import { Button, Grid, GridCol, Paper, Stack, Text } from "@mantine/core";
 import { isAfter, isBefore, startOfDay } from "date-fns";
+import { useMemo } from "react";
 
 export type CalendarUnitProps = {
     year: number;
@@ -11,12 +12,15 @@ export type CalendarUnitProps = {
 }
 
 const CalendarUnit = ({ year, month, start, end, holidaysSet, onClick }: CalendarUnitProps) => {
-    let days: Date[] = [];
-    for (let currentDate = new Date(year, month - 1, 1);
-        currentDate.getMonth() + 1 === month;
-        currentDate.setDate(currentDate.getDate() + 1)) {
-        days.push(new Date(currentDate));
-    }
+    let days: Date[] = useMemo(() => {
+        const days: Date[] = [];
+        const firstDayOfMonth = new Date(year, month - 1, 1);
+        const lastDayOfMonth = new Date(year, month, 0);
+        for (let day = firstDayOfMonth; day <= lastDayOfMonth; day.setDate(day.getDate() + 1)) {
+            days.push(new Date(day));
+        }
+        return days;
+    }, [year, month]);
 
     return (
         <Paper shadow="md" p={"md"} maw={400}>
