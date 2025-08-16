@@ -1,6 +1,7 @@
 import { Box, Button, Group, Input, InputWrapper, Stack, Text } from '@mantine/core'
-import { addDays, addMonths, format, subDays } from 'date-fns'
+import { addDays, addMonths, differenceInMonths, format, subDays } from 'date-fns'
 import { useEffect, useState } from 'react'
+import CalendarUnit from '../CalendarUnit'
 
 type StartEndProps = {
     start: Date
@@ -67,6 +68,18 @@ function CalendarView() {
         )
     }
 
+    const toggleDate = (date: Date) => {
+        setHolidaysSet(prev => {
+            const newHolidaysSet = new Set(prev);
+            if (newHolidaysSet.has(date.toDateString())) {
+                newHolidaysSet.delete(date.toDateString());
+            } else {
+                newHolidaysSet.add(date.toDateString());
+            }
+            return newHolidaysSet;
+        })
+    }
+
     useEffect(() => {
         // 定休日をholidaysSetに設定
         const newHolidaysSet = new Set<string>();
@@ -120,7 +133,20 @@ function CalendarView() {
 
             {/* カレンダー */}
             <Group>
-
+                {Array.from({ length: differenceInMonths(startEndDate.end, startEndDate.start) + 1 }).map((_, i) => {
+                    const date = addMonths(startEndDate.start, i);
+                    const month = date.getMonth() + 1;
+                    const year = date.getFullYear();
+                    return <CalendarUnit
+                        key={i}
+                        year={year}
+                        month={month}
+                        start={startEndDate.start}
+                        end={startEndDate.end}
+                        holidaysSet={holidaysSet}
+                        onClick={(date) => toggleDate(date)}
+                    />
+                })}
             </Group>
         </Box>
     )
