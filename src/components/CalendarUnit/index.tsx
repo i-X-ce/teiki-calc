@@ -1,4 +1,4 @@
-import { Button, Grid, GridCol, Group, Stack, Text } from "@mantine/core";
+import { Button, Grid, GridCol, Paper, Stack, Text } from "@mantine/core";
 
 export type CalendarUnitProps = {
     year: number;
@@ -18,32 +18,33 @@ const CalendarUnit = ({ year, month, start, end, holidaysSet, onClick }: Calenda
     }
 
     return (
-        <Stack>
-            <Group>
-                <Text size="sm">{year}年</Text>
-                <Text size="lg">{month}月</Text>
-            </Group>
-            <Grid columns={7}>
-                {
-                    Array.from({ length: days[0].getDay() }).map((_, i) => (
-                        <GridCol key={i} span={1}></GridCol>
-                    ))
-                }
-                {days.map((day, index) => (
-                    <GridCol key={index} span={1} p={"1px"}>
-                        <Button
-                            disabled={day < start || day > end}
-                            variant={!holidaysSet.has(day.toDateString()) ? 'filled' : 'outline'}
-                            onClick={() => onClick(day)}
-                            p={"xs"}
-                            fullWidth
-                        >
-                            {day.getDate()}
-                        </Button>
-                    </GridCol>
-                ))}
-            </Grid>
-        </Stack >
+        <Paper shadow="md" p={"md"} maw={400}>
+            <Stack>
+                <Stack gap={0}>
+                    <Text size="sm">{year}年</Text>
+                    <Text size="xl">{month}月</Text>
+                </Stack>
+                <Grid columns={7}>
+                    {
+                        Array.from({ length: days[0].getDay() }).map((_, i) => (
+                            <GridCol key={i} span={1}></GridCol>
+                        ))
+                    }
+                    {days.map((day, index) => (
+                        <GridCol key={index} span={1}>
+                            <Button
+                                disabled={day < start || day > end}
+                                variant={!holidaysSet.has(day.toDateString()) ? 'filled' : 'outline'}
+                                onClick={() => onClick(day)}
+                                p={"xs"}
+                                fullWidth
+                            >
+                                {day.getDate()}
+                            </Button>
+                        </GridCol>
+                    ))}
+                </Grid>
+            </Stack ></Paper>
     )
 }
 

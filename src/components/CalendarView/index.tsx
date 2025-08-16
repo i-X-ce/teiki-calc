@@ -1,4 +1,4 @@
-import { Box, Button, Group, Input, InputWrapper, Stack, Text } from '@mantine/core'
+import { Button, Divider, Group, Input, InputWrapper, Stack, Text } from '@mantine/core'
 import { addDays, addMonths, differenceInMonths, format, subDays } from 'date-fns'
 import { useEffect, useState } from 'react'
 import CalendarUnit from '../CalendarUnit'
@@ -14,7 +14,7 @@ function CalendarView() {
         start: new Date(Date.now()),
         end: new Date(addMonths(Date.now(), 6)) // 6か月後,
     })
-    // 定休日
+    // 通勤日
     const [selectedDays, setSelectedDays] = useState<Boolean[]>([true, false, false, false, false, false, true])
 
     const [holidaysSet, setHolidaysSet] = useState<Set<string>>(new Set())
@@ -46,7 +46,7 @@ function CalendarView() {
         })
     }
 
-    // 定休日のトグル
+    // 通勤日のトグル
     const toggleDay = (index: number) => {
         setSelectedDays(prev => {
             const newDays = prev.map((_, i) => i === index ? !prev[i] : prev[i])
@@ -81,7 +81,7 @@ function CalendarView() {
     }
 
     useEffect(() => {
-        // 定休日をholidaysSetに設定
+        // 通勤日をholidaysSetに設定
         const newHolidaysSet = new Set<string>();
         for (let currentDate = new Date(startEndDate.start);
             currentDate <= startEndDate.end;
@@ -95,7 +95,7 @@ function CalendarView() {
     }, [])
 
     return (
-        <Box p={"md"} flex={1}>
+        <Stack p={"md"} flex={1}>
             {/* Tool Box */}
             <Group gap={"lg"}>
                 <Group align='end'>
@@ -116,12 +116,12 @@ function CalendarView() {
                     </InputWrapper>
                 </Group>
                 <Stack gap={"1px"}>
-                    <Text size='sm'>定休日</Text>
+                    <Text size='sm'>通勤日</Text>
                     <Group gap={"xs"}>
                         {selectedDays.map((isSelected, i) => (
                             <Button
                                 key={i}
-                                variant={isSelected ? 'filled' : 'outline'}
+                                variant={isSelected ? 'outline' : 'filled'}
                                 onClick={() => toggleDay(i)}
                             >
                                 {['日', '月', '火', '水', '木', '金', '土'][i]}
@@ -131,8 +131,10 @@ function CalendarView() {
                 </Stack>
             </Group>
 
+            <Divider />
+
             {/* カレンダー */}
-            <Group>
+            <Group align='stretch'>
                 {Array.from({ length: differenceInMonths(startEndDate.end, startEndDate.start) + 1 }).map((_, i) => {
                     const date = addMonths(startEndDate.start, i);
                     const month = date.getMonth() + 1;
@@ -148,7 +150,7 @@ function CalendarView() {
                     />
                 })}
             </Group>
-        </Box>
+        </Stack>
     )
 }
 
