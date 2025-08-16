@@ -1,6 +1,6 @@
 import { Box, Button, Group, Input, InputWrapper, Stack, Text } from '@mantine/core'
 import { addDays, addMonths, format, subDays } from 'date-fns'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 type StartEndProps = {
     start: Date
@@ -14,8 +14,9 @@ function CalendarView() {
         end: new Date(addMonths(Date.now(), 6)) // 6か月後,
     })
     // 定休日
-    const [selectedDay, setSelectedDay] = useState<Boolean[]>([true, false, false, false, false, false, true])
+    const [selectedDays, setSelectedDays] = useState<Boolean[]>([true, false, false, false, false, false, true])
 
+    const [holidaysSet, setHolidaysSet] = useState<Set<string>>(new Set())
 
     // 開始日と終了日の変更ハンドラー
     const handleStartEndDateChange = (e: React.ChangeEvent<HTMLInputElement>, startEndType: keyof StartEndProps) => {
@@ -46,10 +47,39 @@ function CalendarView() {
 
     // 定休日のトグル
     const toggleDay = (index: number) => {
-        setSelectedDay(prev =>
-            prev.map((_, i) => i === index ? !prev[i] : prev[i])
+        setSelectedDays(prev => {
+            const newDays = prev.map((_, i) => i === index ? !prev[i] : prev[i])
+            const newHolidaysSet = new Set(holidaysSet);
+            for (let currentDate = new Date(startEndDate.start);
+                currentDate <= startEndDate.end;
+                currentDate = addDays(currentDate, 1)) {
+                const dayIndex = currentDate.getDay();
+                if (dayIndex !== index) continue;
+                if (newDays[dayIndex]) {
+                    newHolidaysSet.add(currentDate.toDateString());
+                } else {
+                    newHolidaysSet.delete(currentDate.toDateString());
+                }
+            }
+            setHolidaysSet(newHolidaysSet);
+            return newDays;
+        }
         )
     }
+
+    useEffect(() => {
+        // 定休日をholidaysSetに設定
+        const newHolidaysSet = new Set<string>();
+        for (let currentDate = new Date(startEndDate.start);
+            currentDate <= startEndDate.end;
+            currentDate = addDays(currentDate, 1)) {
+            const dayIndex = currentDate.getDay();
+            if (selectedDays[dayIndex]) {
+                newHolidaysSet.add(currentDate.toDateString());
+            }
+        }
+        setHolidaysSet(newHolidaysSet);
+    }, [])
 
     return (
         <Box p={"md"} flex={1}>
@@ -75,7 +105,7 @@ function CalendarView() {
                 <Stack gap={"1px"}>
                     <Text size='sm'>定休日</Text>
                     <Group gap={"xs"}>
-                        {selectedDay.map((isSelected, i) => (
+                        {selectedDays.map((isSelected, i) => (
                             <Button
                                 key={i}
                                 variant={isSelected ? 'filled' : 'outline'}

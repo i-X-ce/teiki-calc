@@ -6,7 +6,7 @@ export default function FareCalculate(
   startDate: Date,
   endDate: Date,
   passes: Pass[],
-  holidays: Date[]
+  holidays: Date[] // 休日(Date型で欲しいので配列にしとく)
 ): FarePlanDetail[] {
   const result: FarePlanDetail[] = [];
 
@@ -26,11 +26,13 @@ export default function FareCalculate(
     result.push(new FarePlanDetail(new Date(currentDate)));
   }
 
+  const holidaysSet = new Set(
+    holidays.map((holiday) => holiday.toDateString())
+  );
+
   for (let i = 0; i < result.length; i++) {
     const date = result[i];
-    const isHoliday = holidays.some(
-      (holiday) => holiday.toDateString() === date.getDate().toDateString()
-    );
+    const isHoliday = holidaysSet.has(date.getDate().toDateString());
     if (isHoliday) {
       const prevAmount = i === 0 ? 0 : result[i - 1].getTotalAmount();
       date.setTotalAmount(prevAmount);
