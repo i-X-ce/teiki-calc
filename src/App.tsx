@@ -3,6 +3,7 @@ import './App.css'
 import PassView from './components/PassView'
 import CalendarView from './components/CalendarView'
 import { HEADER_HEIGHT } from './utils/constants'
+import PassProvider from './components/PassProvider'
 
 function App() {
 
@@ -17,8 +18,10 @@ function App() {
         </AppShell.Header>
         <AppShell.Main>
           <Flex mih={`calc(100vh - ${HEADER_HEIGHT}px)`}>
-            <CalendarView />
-            <PassView />
+            <PassProvider>
+              <CalendarView />
+              <PassView />
+            </PassProvider>
           </Flex>
         </AppShell.Main>
       </AppShell>

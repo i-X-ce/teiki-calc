@@ -1,7 +1,9 @@
-import { Button, Divider, Group, Input, InputWrapper, Stack, Text } from '@mantine/core'
+import { Box, Button, Divider, Group, Input, InputWrapper, Stack, Text } from '@mantine/core'
 import { addDays, addMonths, differenceInMonths, format, startOfDay, startOfMonth, subDays } from 'date-fns'
 import { useCallback, useState } from 'react'
 import CalendarUnit from '../CalendarUnit'
+import { usePass } from '../PassProvider'
+import fareCalculate from '../../utils/FareCalculate'
 
 type StartEndDateProps = {
     start: Date
@@ -32,6 +34,8 @@ function CalendarView() {
     }, [startEndDate])
     // 休日セットのstate
     const [holidaysSet, setHolidaysSet] = useState<Set<string>>(initHolidaysSet(startEndDate))
+
+    const { passList } = usePass();
 
     // 開始日と終了日の変更ハンドラー
     const handleStartEndDateChange = (e: React.ChangeEvent<HTMLInputElement>, startEndType: keyof StartEndDateProps) => {
@@ -96,7 +100,11 @@ function CalendarView() {
         })
     }
 
-
+    // 計算ボタンのハンドラー
+    const handleClickCalc = () => {
+        const result = fareCalculate(startEndDate.start, startEndDate.end, passList, holidaysSet)
+        console.log(result);
+    }
 
     return (
         <Stack p={"md"} flex={1}>
@@ -154,6 +162,18 @@ function CalendarView() {
                     />
                 })}
             </Group>
+
+            <Box pos={"sticky"} bottom={0} p={"md"} bg={"white"} >
+                <Button
+                    variant='gradient'
+                    gradient={{ from: "green.6", to: "green.8" }}
+                    size='lg'
+                    fullWidth
+                    onClick={handleClickCalc}
+                >
+                    計算
+                </Button>
+            </Box>
         </Stack>
     )
 }

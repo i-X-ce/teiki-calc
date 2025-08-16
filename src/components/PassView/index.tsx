@@ -1,44 +1,15 @@
 import { Button, Divider, ScrollArea, Stack, Text } from '@mantine/core'
 import type Pass from '../../utils/Pass'
 import { createPassId } from '../../utils/Pass'
-import { useState } from 'react'
 import PassItem from '../PassItem'
 import { AnimatePresence } from 'motion/react'
 import styles from './style.module.css'
 import { HEADER_HEIGHT } from '../../utils/constants'
+import { usePass } from '../PassProvider'
 
-const INIT_PASS: Pass[] = [
-  {
-    id: createPassId(0),
-    duration: {
-      year: 0,
-      month: 1,
-      day: 0
-    },
-    price: 1000
-  },
-  {
-    id: createPassId(1),
-    duration: {
-      year: 0,
-      month: 3,
-      day: 0
-    },
-    price: 2500
-  },
-  {
-    id: createPassId(2),
-    duration: {
-      year: 0,
-      month: 6,
-      day: 0
-    },
-    price: 4500
-  },
-]
 
 const PassView = () => {
-  const [passList, setPassList] = useState(INIT_PASS);
+  const { passList, setPassList } = usePass();
 
   const handleAddPass = () => {
     const newPass: Pass = {

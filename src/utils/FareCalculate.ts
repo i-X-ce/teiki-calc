@@ -2,11 +2,11 @@ import { subDays, subMonths, subYears } from "date-fns";
 import FarePlanDetail, { type UnPassType } from "./FarePlanDetail";
 import type Pass from "./Pass";
 
-export default function FareCalculate(
+export default function fareCalculate(
   startDate: Date,
   endDate: Date,
   passes: Pass[],
-  holidays: Date[] // 休日(Date型で欲しいので配列にしとく)
+  holidays: Set<string> // Dateの文字列表現をキーにしたSet
 ): FarePlanDetail[] {
   const result: FarePlanDetail[] = [];
 
@@ -26,13 +26,9 @@ export default function FareCalculate(
     result.push(new FarePlanDetail(new Date(currentDate)));
   }
 
-  const holidaysSet = new Set(
-    holidays.map((holiday) => holiday.toDateString())
-  );
-
   for (let i = 0; i < result.length; i++) {
     const date = result[i];
-    const isHoliday = holidaysSet.has(date.getDate().toDateString());
+    const isHoliday = holidays.has(date.getDate().toDateString());
     if (isHoliday) {
       const prevAmount = i === 0 ? 0 : result[i - 1].getTotalAmount();
       date.setTotalAmount(prevAmount);
@@ -73,13 +69,15 @@ export function calcTest() {
     { id: "pass2", duration: { year: 0, month: 0, day: 2 }, price: 800 },
     { id: "pass3", duration: { year: 0, month: 0, day: 3 }, price: 1100 },
   ];
-  const holidays = [
-    new Date("2023-01-03"),
-    new Date("2023-01-05"),
-    new Date("2023-01-08"),
-    new Date("2023-01-09"),
-  ];
-  const farePlanDetails = FareCalculate(startDate, endDate, passes, holidays);
+  const holidays = new Set(
+    [
+      new Date("2023-01-03"),
+      new Date("2023-01-05"),
+      new Date("2023-01-08"),
+      new Date("2023-01-09"),
+    ].map((date) => date.toDateString())
+  );
+  const farePlanDetails = fareCalculate(startDate, endDate, passes, holidays);
   console.log(
     farePlanDetails.map((detail) => {
       return {
