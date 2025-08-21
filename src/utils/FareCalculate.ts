@@ -1,5 +1,5 @@
-import { startOfDay, sub, subDays } from "date-fns";
-import FarePlanDetail, { type UnPassType } from "./FarePlanDetail";
+import { add, startOfDay, subDays } from "date-fns";
+import FarePlanDetail from "./FarePlanDetail";
 import type Pass from "./Pass";
 
 export default function fareCalculate(
@@ -8,77 +8,117 @@ export default function fareCalculate(
   passes: Pass[],
   holidays: Set<string> // Dateの文字列表現をキーにしたSet
 ): FarePlanDetail[] {
-  const result: FarePlanDetail[] = [];
+  const FarePlans: FarePlanDetail[] = [];
+  const resultMap: Record<string, FarePlanDetail> = {};
 
   startDate = startOfDay(startDate);
   endDate = startOfDay(endDate);
 
   if (startDate > endDate) {
-    return result;
+    return FarePlans;
   }
 
   if (passes.length === 0) {
-    return result;
+    return FarePlans;
   }
 
   for (
-    let currentDate = new Date(startDate);
+    let currentDate = new Date(subDays(startDate, 1)); // 開始日の前日から開始
     currentDate <= endDate;
     currentDate.setDate(currentDate.getDate() + 1)
   ) {
-    result.push(new FarePlanDetail(new Date(currentDate)));
+    const newFarePlanDetail = new FarePlanDetail(new Date(currentDate));
+    FarePlans.push(newFarePlanDetail);
+    resultMap[currentDate.toDateString()] = newFarePlanDetail;
   }
 
-  for (let i = 0; i < result.length; i++) {
-    const date = result[i];
-    const isHoliday = holidays.has(date.getDate().toDateString());
-    if (isHoliday) {
-      const prevAmount = i === 0 ? 0 : result[i - 1].getTotalAmount();
-      date.setTotalAmount(prevAmount);
-      continue;
-    }
+  FarePlanDetail.setPassList(passes);
 
-    const minAmountPass: { pass: UnPassType; amount: number } = {
-      pass: undefined,
-      amount: Infinity,
-    };
-    for (const pass of passes) {
-      let prevDate = new Date(date.getDate());
-      prevDate = sub(prevDate, { ...pass.duration });
-      const prevFarePlanDetail = result.find(
-        (r) => r.getDate().toDateString() === prevDate.toDateString()
-      );
-      const amount =
-        (prevFarePlanDetail?.getTotalAmount() || 0) +
-        pass.price * (pass.isReturnTicket ? 2 : 1);
-      if (amount < minAmountPass.amount) {
-        minAmountPass.pass = pass;
-        minAmountPass.amount = amount;
+  // 最小値を保持
+  let overFarePlan: FarePlanDetail | undefined = undefined;
+
+  for (let i = 0; i < FarePlans.length; i++) {
+    const currentFarePlan = FarePlans[i];
+    const isHoliday = holidays.has(currentFarePlan.getDate().toDateString());
+
+    // よりコストが低いならコピーしないようにしとく
+    if (isHoliday && i > 0) {
+      if (
+        (FarePlans[i - 1].getMinTotalAmount()?.amount || 0) <=
+        (currentFarePlan.getMinTotalAmount()?.amount || 0)
+      ) {
+        currentFarePlan.copyTotalAmountMap(FarePlans[i - 1]);
+        currentFarePlan.setPurchased(false);
       }
     }
-    date.setPurchasedPass(minAmountPass.pass);
-    date.setTotalAmount(minAmountPass.amount);
+
+    const currentAmount = currentFarePlan.getMinTotalAmount()?.amount || 0;
+
+    for (const pass of passes) {
+      const nextDate = add(currentFarePlan.getDate(), { ...pass.duration });
+      const nextFarePlan =
+        resultMap[nextDate.toDateString()] || new FarePlanDetail(nextDate);
+
+      const nextAmount =
+        currentAmount + pass.price * (pass.isReturnTicket ? 2 : 1);
+
+      if (
+        nextDate > endDate &&
+        nextAmount < (overFarePlan?.getMinTotalAmount()?.amount || Infinity)
+      ) {
+        overFarePlan = nextFarePlan;
+      }
+      nextFarePlan.addTotalAmount(nextAmount, pass.id);
+    }
   }
 
-  const resultMap: Record<string, FarePlanDetail> = result.reduce(
-    (acc, detail) => {
-      const key = detail.getDate().toString();
-      acc[key] = detail;
-      return acc;
-    },
-    {} as Record<string, FarePlanDetail>
-  );
+  // console.log(
+  //   [...Object.values(resultMap), overFarePlan].map((detail) =>
+  //     detail
+  //       ? `${detail.getDate().toLocaleDateString()}: ${
+  //           detail.getMinTotalAmount()?.amount
+  //         }, ${detail.getPurchasedPass()?.id}, purchasedDate: ${detail
+  //           .getPurchasedDate()
+  //           ?.toLocaleDateString()}`
+  //       : ""
+  //   )
+  // );
+
+  // console.log([...Object.values(resultMap), overFarePlan]);
 
   let purchaseList: FarePlanDetail[] = [];
-  for (let currentDate = new Date(endDate); currentDate >= startDate; ) {
-    const purchasedDate = resultMap[currentDate.toString()];
-    purchaseList.push(purchasedDate);
-    currentDate = purchasedDate.getPurchasedDate() || subDays(currentDate, 1);
+  for (
+    let currentDate = new Date(
+      (() => {
+        if (!overFarePlan) return endDate;
+        const lastResult = resultMap[endDate.toDateString()];
+        if (!lastResult) return endDate;
+        const lastMinAmount = lastResult.getMinTotalAmount();
+        const overMinAmount = overFarePlan.getMinTotalAmount();
+        if (!lastMinAmount || !overMinAmount) return endDate;
+        if (overMinAmount.amount < lastMinAmount.amount) {
+          return overFarePlan.getDate();
+        } else {
+          return endDate;
+        }
+      })()
+    );
+    currentDate >= startDate;
+
+  ) {
+    const purchasedDate =
+      currentDate.toDateString() === overFarePlan?.getDate().toDateString()
+        ? overFarePlan
+        : resultMap[currentDate.toDateString()];
+    if (purchasedDate.isPurchased()) purchaseList.push(purchasedDate);
+    currentDate = (() => {
+      const yesterday = subDays(currentDate, 1);
+      if (!purchasedDate) return yesterday;
+      if (!purchasedDate.isPurchased()) return yesterday;
+      return purchasedDate.getPurchasedDate() || yesterday;
+    })();
   }
-  purchaseList = purchaseList
-    .reverse()
-    .filter((detail) => detail.getPurchasedPass() !== undefined)
-    .map((detail) => detail);
+  purchaseList = purchaseList.reverse();
 
   return purchaseList;
 }
@@ -88,9 +128,24 @@ export function fareCalculateTest() {
   const startDate = new Date("2023-01-01");
   const endDate = new Date("2023-01-12");
   const passes = [
-    { id: "pass1", duration: { years: 0, months: 0, days: 1 }, price: 500 },
-    { id: "pass2", duration: { years: 0, months: 0, days: 2 }, price: 800 },
-    { id: "pass3", duration: { years: 0, months: 0, days: 3 }, price: 1100 },
+    {
+      id: "pass1",
+      duration: { years: 0, months: 0, days: 1 },
+      price: 500,
+      isReturnTicket: false,
+    },
+    {
+      id: "pass2",
+      duration: { years: 0, months: 0, days: 2 },
+      price: 800,
+      isReturnTicket: false,
+    },
+    {
+      id: "pass3",
+      duration: { years: 0, months: 0, days: 3 },
+      price: 1100,
+      isReturnTicket: false,
+    },
   ];
   const holidays = new Set(
     [
@@ -106,7 +161,7 @@ export function fareCalculateTest() {
       return {
         date: detail.getDate().toDateString(),
         pass: detail.getPurchasedPass()?.id,
-        amount: detail.getTotalAmount(),
+        amount: detail.getMinTotalAmount()?.amount,
         purchasedDate: detail.getPurchasedDate(true)?.toDateString(),
       };
     })

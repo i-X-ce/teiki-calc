@@ -3,7 +3,7 @@ import { addDays, addMonths, differenceInMonths, format, startOfDay, startOfMont
 import { useCallback, useState } from 'react'
 import CalendarUnit from '../CalendarUnit'
 import { usePass } from '../PassProvider'
-import fareCalculate from '../../utils/FareCalculate'
+import fareCalculate, { fareCalculateTest } from '../../utils/fareCalculate'
 import FarePlanDetail from '../../utils/FarePlanDetail'
 import { IoIosCard } from 'react-icons/io'
 import { durationToString } from '../../utils/DateDuration'
@@ -112,6 +112,7 @@ function CalendarView() {
     // 計算ボタンのハンドラー
     const handleClickCalc = () => {
         const result = fareCalculate(startEndDate.start, startEndDate.end, passList, holidaysSet)
+        // fareCalculateTest()
         setCalcResult(result);
     }
 
@@ -193,7 +194,6 @@ function CalendarView() {
                                 const pass = passList.find(p => p.id === detail.getPurchasedPass()?.id);
                                 if (!pass) return null;
 
-
                                 return (
                                     <TimelineItem
                                         key={i}
@@ -202,12 +202,12 @@ function CalendarView() {
                                     >
                                         <Group>
                                             <Text c={"dimmed"} size='sm'>
-                                                {`${detail.getPurchasedDate()?.toLocaleDateString()} - ${detail.getDate().toLocaleDateString()}`}
+                                                {`${detail.getPurchasedDate(true)?.toLocaleDateString()} - ${detail.getDate().toLocaleDateString()}`}
                                             </Text>
                                         </Group>
                                         <Group>
                                             <Text size='sm'>
-                                                {`合計: ${detail.getTotalAmount()}円`}
+                                                {`合計: ${detail.getMinTotalAmount()?.amount}円`}
                                             </Text>
                                             <Text c={"green"} size='sm'>
                                                 + {pass.price}円{pass.isReturnTicket ? " × 2" : ""}
@@ -223,7 +223,7 @@ function CalendarView() {
                                 合計金額:
                             </Title>
                             <Title order={2} c={"green"}>
-                                {calcResult[calcResult.length - 1].getTotalAmount()}
+                                {calcResult[calcResult.length - 1]?.getMinTotalAmount()?.amount || 0}
                             </Title>
                             <Title order={3}>
                                 円

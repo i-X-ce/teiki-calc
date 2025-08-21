@@ -6,17 +6,19 @@ export type UnDateType = Date | undefined;
 
 export default class FarePlanDetail {
   private date: Date;
-  private purchasedPass: UnPassType;
-  private totalAmount: number;
+  private totalAmountMap: Record<string, number> = {};
+  private purchased: boolean = true;
+  private static passMap: Record<string, Pass> = {};
 
-  constructor(
-    date: Date,
-    purchasedPass: UnPassType = undefined,
-    totalAmount: number = 0
-  ) {
+  constructor(date: Date) {
     this.date = date;
-    this.purchasedPass = purchasedPass;
-    this.totalAmount = totalAmount;
+  }
+
+  public static setPassList(passList: Pass[]) {
+    FarePlanDetail.passMap = passList.reduce((acc, pass) => {
+      acc[pass.id] = pass;
+      return acc;
+    }, {} as Record<string, Pass>);
   }
 
   public getDate(): Date {
@@ -24,29 +26,53 @@ export default class FarePlanDetail {
   }
 
   public getPurchasedPass(): UnPassType {
-    return this.purchasedPass;
+    const purchasedPassId = this.getMinTotalAmount()?.passId;
+    if (!purchasedPassId) {
+      return undefined;
+    }
+    return FarePlanDetail.passMap[purchasedPassId];
   }
 
-  public getTotalAmount(): number {
-    return this.totalAmount;
+  public isPurchased(): boolean {
+    return this.purchased;
   }
 
-  public setPurchasedPass(purchasedPassId: UnPassType): void {
-    this.purchasedPass = purchasedPassId;
+  public setPurchased(purchased: boolean) {
+    this.purchased = purchased;
   }
 
-  public setTotalAmount(totalAmount: number): void {
-    this.totalAmount = totalAmount;
+  public addTotalAmount(amount: number, passId: string) {
+    this.totalAmountMap[passId] = amount;
+  }
+
+  public copyTotalAmountMap(target: FarePlanDetail) {
+    this.totalAmountMap = { ...target.totalAmountMap };
+  }
+
+  public getMinTotalAmount(): { passId: string; amount: number } | undefined {
+    if (Object.keys(this.totalAmountMap).length === 0) {
+      return undefined;
+    }
+    let minAmount = Infinity;
+    let minPass = "";
+    for (const [passId, amount] of Object.entries(this.totalAmountMap)) {
+      if (amount < minAmount) {
+        minAmount = amount;
+        minPass = passId;
+      }
+    }
+    return { passId: minPass, amount: minAmount };
   }
 
   // 購入したパスの開始日を取得
   // displayがtrueの場合は表示用のフォーマット(日+1)で返す
   public getPurchasedDate(display?: boolean): UnDateType {
-    if (!this.purchasedPass) {
+    const purchasedPass = this.getPurchasedPass();
+    if (!purchasedPass) {
       return undefined;
     }
     let purchasedDate = new Date(this.date);
-    purchasedDate = sub(purchasedDate, { ...this.purchasedPass.duration });
+    purchasedDate = sub(purchasedDate, { ...purchasedPass.duration });
     if (display) {
       purchasedDate = addDays(purchasedDate, 1); // 表示用に1日加算
     }
