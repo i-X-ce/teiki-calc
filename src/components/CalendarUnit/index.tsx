@@ -31,6 +31,13 @@ const CalendarUnit = ({ year, month, start, end, holidaysSet, onClick }: Calenda
                 </Stack>
                 <Grid columns={7}>
                     {
+                        ["日", "月", "火", "水", "木", "金", "土"].map((day, i) => (
+                            <GridCol key={i} span={1}>
+                                <Text ta={"center"} size="sm">{day}</Text>
+                            </GridCol>
+                        ))
+                    }
+                    {
                         Array.from({ length: days[0].getDay() }).map((_, i) => (
                             <GridCol key={i} span={1}></GridCol>
                         ))
