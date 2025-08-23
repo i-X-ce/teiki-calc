@@ -1,22 +1,37 @@
 import { Group, Modal, Title } from "@mantine/core";
 import { createContext, useContext, useState, type ReactNode } from "react"
-import { MdError } from "react-icons/md";
+import { MdError, MdWarning } from "react-icons/md";
 
 type ErrorModalContextType = {
-    openError: ({ title, content }: { title: string, content: ReactNode }) => void;
+    openError: (props: openErrorType) => void;
     closeError: () => void;
 } | null;
 export const ErrorModalContext = createContext<ErrorModalContextType>(null);
+
+type openErrorType = {
+    variants?: variantsType;
+    title: string;
+    content: ReactNode;
+}
+
+type variantsType = "error" | "warning";
+
+const variantsToColor: { [key in variantsType]: string } = {
+    error: "red",
+    warning: "yellow"
+}
 
 const ErrorModalProvider = ({ children }: { children: ReactNode }) => {
     const [open, setOpen] = useState(false);
     const [title, setTitle] = useState<string>("");
     const [content, setContent] = useState<ReactNode>(null);
+    const [variant, setVariant] = useState<variantsType>("error");
     const value = {
-        openError: ({ title, content }: { title: string, content: ReactNode }) => {
+        openError: ({ variants, title, content }: openErrorType) => {
             setOpen(true);
             setTitle(title);
             setContent(content);
+            if (variants) setVariant(variants);
         },
         closeError: () => {
             setOpen(false);
@@ -28,8 +43,13 @@ const ErrorModalProvider = ({ children }: { children: ReactNode }) => {
             {children}
             <Modal
                 title={
-                    <Group align="center" c={"red"} >
-                        <MdError size={"1.2rem"} />
+                    <Group align="center" c={variantsToColor[variant]} >
+                        {
+                            (() => {
+                                if (variant === "error") return <MdError size={"1.2rem"} />;
+                                if (variant === "warning") return <MdWarning size={"1.2rem"} />;
+                            })()
+                        }
                         <Title order={3}>
                             {title}
                         </Title>

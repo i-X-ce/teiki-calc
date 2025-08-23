@@ -42,7 +42,7 @@ const PassView = () => {
                 }}
                   deletePass={() => {
                     if (passList.length <= 1) {
-                      openError({ title: "消せません！", content: "定期は最低1つ必要です" });
+                      openError({ title: "消せません！", content: "定期は最低1つ必要です", variants: "warning" });
                       return;
                     };
                     setPassList((prev) => prev.filter(p => p.id !== pass.id));
