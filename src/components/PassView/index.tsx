@@ -6,10 +6,12 @@ import { AnimatePresence } from 'motion/react'
 import styles from './style.module.css'
 import { HEADER_HEIGHT } from '../../utils/constants'
 import { usePass } from '../PassProvider'
+import { useErrorModal } from '../ErrorModal'
 
 
 const PassView = () => {
   const { passList, setPassList } = usePass();
+  const { openError } = useErrorModal();
 
   const handleAddPass = () => {
     const newPass: Pass = {
@@ -39,7 +41,10 @@ const PassView = () => {
                   setPassList((prev) => prev.map(p => p.id === pass.id ? pass : p));
                 }}
                   deletePass={() => {
-                    if (passList.length <= 1) return;
+                    if (passList.length <= 1) {
+                      openError({ title: "消せません！", content: "定期は最低1つ必要です" });
+                      return;
+                    };
                     setPassList((prev) => prev.filter(p => p.id !== pass.id));
                   }}
                 />

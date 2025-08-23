@@ -4,6 +4,7 @@ import PassView from './components/PassView'
 import CalendarView from './components/CalendarView'
 import { HEADER_HEIGHT } from './utils/constants'
 import PassProvider from './components/PassProvider'
+import ErrorModalProvider from './components/ErrorModal'
 
 function App() {
 
@@ -18,10 +19,12 @@ function App() {
         </AppShell.Header>
         <AppShell.Main>
           <Flex mih={`calc(100vh - ${HEADER_HEIGHT}px)`}>
-            <PassProvider>
-              <CalendarView />
-              <PassView />
-            </PassProvider>
+            <ErrorModalProvider>
+              <PassProvider>
+                <CalendarView />
+                <PassView />
+              </PassProvider>
+            </ErrorModalProvider>
           </Flex>
         </AppShell.Main>
       </AppShell>

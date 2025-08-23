@@ -1,5 +1,5 @@
-import { Modal, Text } from "@mantine/core";
-import { createContext, useState, type ReactNode } from "react"
+import { Group, Modal, Title } from "@mantine/core";
+import { createContext, useContext, useState, type ReactNode } from "react"
 import { MdError } from "react-icons/md";
 
 type ErrorModalContextType = {
@@ -28,10 +28,12 @@ const ErrorModalProvider = ({ children }: { children: ReactNode }) => {
             {children}
             <Modal
                 title={
-                    <Text c={"red"}>
-                        <MdError />
-                        {title}
-                    </Text>
+                    <Group align="center" c={"red"} >
+                        <MdError size={"1.2rem"} />
+                        <Title order={3}>
+                            {title}
+                        </Title>
+                    </Group>
                 }
                 opened={open}
                 onClose={() => value.closeError()}>
@@ -42,7 +44,7 @@ const ErrorModalProvider = ({ children }: { children: ReactNode }) => {
 }
 
 export const useErrorModal = () => {
-    const context = createContext(ErrorModalContext);
+    const context = useContext(ErrorModalContext);
     if (!context) {
         throw new Error("useErrorModal must be used within a ErrorModalProvider");
     }
