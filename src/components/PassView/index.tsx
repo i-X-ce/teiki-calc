@@ -19,7 +19,8 @@ const PassView = () => {
         months: 1,
         days: 0
       },
-      price: 1000
+      price: 1000,
+      isReturnTicket: false
     }
     setPassList((prev) => [...prev, newPass]);
   }
