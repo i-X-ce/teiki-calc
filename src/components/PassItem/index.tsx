@@ -6,6 +6,7 @@ import { MdArrowDropDown, MdArrowDropUp, MdDelete } from 'react-icons/md'
 import { useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import { RiArrowTurnForwardFill } from 'react-icons/ri'
+import { useErrorModal } from '../ErrorModal'
 
 export type PassItemProps = {
     pass: Pass
@@ -50,11 +51,18 @@ const DurationItem = ({ value, setValue, unit }: { value: number, setValue: (val
 
 const PassItem = ({ pass, setPass, deletePass }: PassItemProps) => {
     const [hovered, setHovered] = useState(false);
-
     const { duration, price } = pass;
+    const { openError } = useErrorModal();
 
-    const handleDurationChange = (newDuration: Partial<Pass['duration']>) => {
-        setPass({ ...pass, duration: { ...duration, ...newDuration } });
+    const handleDurationChange = (updateDuration: Partial<Pass['duration']>) => {
+        const newDuration = { ...duration, ...updateDuration };
+        const sum = Object.values(newDuration).reduce((a, b) => a + b, 0);
+        if (sum === 0) {
+            openError({ variants: "warning", title: "0はダメ！", content: "定期の期間は0にはできません。" });
+            return;
+        };
+
+        setPass({ ...pass, duration: newDuration });
     };
 
     const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
