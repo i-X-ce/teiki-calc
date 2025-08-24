@@ -49,10 +49,21 @@ function CalendarView() {
     // 定期のリストを取得
     const { passList } = usePass();
 
+    // 変更があったか
+    const [dirty, setDirty] = useState(false);
+
     // ----- イベントハンドラー -----
 
     // 開始日と終了日の変更ハンドラー
-    const handleStartEndDateChange = (e: React.ChangeEvent<HTMLInputElement>, startEndType: keyof StartEndDateProps) => {
+    const handleStartEndDateChange = async (e: React.ChangeEvent<HTMLInputElement>, startEndType: keyof StartEndDateProps) => {
+        if (dirty) {
+            const confirm = window.confirm("開始日または終了日を変更すると、通勤日の設定がリセットされます。本当によろしいですか？");
+            if (!confirm) {
+                return;
+            }
+            setDirty(false);
+        }
+
         const newDate = new Date(e.target.value)
         setStartEndDate(prev => {
             let newStart = prev.start, newEnd = prev.end;
@@ -107,7 +118,7 @@ function CalendarView() {
         )
     }
 
-    const handleToggleDay = useCallback((date: Date) => {
+    const handleToggleDate = useCallback((date: Date) => {
         const monthIndex = differenceInMonths(startOfMonth(date), startOfMonth(startEndDate.start));
         if (monthIndex < 0 || monthIndex >= holidaysSetList.length) {
             return;
@@ -125,6 +136,7 @@ function CalendarView() {
                 return set;
             }
         }))
+        setDirty(true);
     }, [startEndDate])
 
     // 計算ボタンのハンドラー
@@ -191,7 +203,7 @@ function CalendarView() {
                             start={startEndDate.start}
                             end={startEndDate.end}
                             holidaysSet={i < holidaysSetList.length ? holidaysSetList[i] : new Set()}
-                            onClick={handleToggleDay}
+                            onClick={handleToggleDate}
                         />
                     })}
                 </Group>
