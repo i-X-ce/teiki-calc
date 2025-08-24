@@ -12,6 +12,7 @@ export const INIT_PASS: Pass[] = [
       days: 1,
     },
     price: 500,
+    isReturnTicket: true,
   },
   {
     id: createPassId(1),
@@ -21,6 +22,7 @@ export const INIT_PASS: Pass[] = [
       days: 0,
     },
     price: 1000,
+    isReturnTicket: false,
   },
   {
     id: createPassId(2),
@@ -30,6 +32,7 @@ export const INIT_PASS: Pass[] = [
       days: 0,
     },
     price: 2500,
+    isReturnTicket: false,
   },
   {
     id: createPassId(3),
@@ -39,5 +42,6 @@ export const INIT_PASS: Pass[] = [
       days: 0,
     },
     price: 4500,
+    isReturnTicket: false,
   },
 ];

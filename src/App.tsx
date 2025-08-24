@@ -1,9 +1,10 @@
-import { AppShell, Flex, Text } from '@mantine/core'
+import { AppShell, Flex, Title } from '@mantine/core'
 import './App.css'
 import PassView from './components/PassView'
 import CalendarView from './components/CalendarView'
 import { HEADER_HEIGHT } from './utils/constants'
 import PassProvider from './components/PassProvider'
+import ErrorModalProvider from './components/ErrorModal'
 
 function App() {
 
@@ -14,14 +15,16 @@ function App() {
         aside={{ width: "max-content", breakpoint: 'sm' }}
       >
         <AppShell.Header p={"md"}>
-          <Text size=''>Teiki Calc</Text>
+          <Title order={3}>Teiki Calc</Title>
         </AppShell.Header>
         <AppShell.Main>
           <Flex mih={`calc(100vh - ${HEADER_HEIGHT}px)`}>
-            <PassProvider>
-              <CalendarView />
-              <PassView />
-            </PassProvider>
+            <ErrorModalProvider>
+              <PassProvider>
+                <CalendarView />
+                <PassView />
+              </PassProvider>
+            </ErrorModalProvider>
           </Flex>
         </AppShell.Main>
       </AppShell>

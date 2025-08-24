@@ -1,15 +1,17 @@
-import { Button, Card, Group, Input, Stack, Text } from '@mantine/core'
+import { Button, Card, Checkbox, Group, Input, Stack, Text } from '@mantine/core'
 import type Pass from '../../utils/Pass'
 import { DateDurationJP } from '../../utils/DateDuration'
 import styles from "./style.module.css"
 import { MdArrowDropDown, MdArrowDropUp, MdDelete } from 'react-icons/md'
 import { useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
+import { RiArrowTurnForwardFill } from 'react-icons/ri'
+import { useErrorModal } from '../ErrorModal'
 
 export type PassItemProps = {
     pass: Pass
     setPass: (pass: Pass) => void
-    deletePass: () => void
+    deletePass: (pass: Pass) => void
 }
 
 const DurationItem = ({ value, setValue, unit }: { value: number, setValue: (value: number) => void, unit: string }) => {
@@ -27,7 +29,7 @@ const DurationItem = ({ value, setValue, unit }: { value: number, setValue: (val
     }
 
     return (
-        <Group gap={"xs"}>
+        <Group gap={"xs"} pos={"relative"} className={styles.durationItemRoot}>
             <div className={styles.durationButtonsRoot} >
                 <button type='button' onClick={() => handleValueAdd(1)}><MdArrowDropUp /></button>
                 <button type='button' onClick={() => handleValueAdd(-1)}><MdArrowDropDown /></button>
@@ -49,11 +51,18 @@ const DurationItem = ({ value, setValue, unit }: { value: number, setValue: (val
 
 const PassItem = ({ pass, setPass, deletePass }: PassItemProps) => {
     const [hovered, setHovered] = useState(false);
-
     const { duration, price } = pass;
+    const { openError } = useErrorModal();
 
-    const handleDurationChange = (newDuration: Partial<Pass['duration']>) => {
-        setPass({ ...pass, duration: { ...duration, ...newDuration } });
+    const handleDurationChange = (updateDuration: Partial<Pass['duration']>) => {
+        const newDuration = { ...duration, ...updateDuration };
+        const sum = Object.values(newDuration).reduce((a, b) => a + b, 0);
+        if (sum === 0) {
+            openError({ variants: "warning", title: "0はダメ！", content: "定期の期間は0にはできません。" });
+            return;
+        };
+
+        setPass({ ...pass, duration: newDuration });
     };
 
     const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -63,6 +72,12 @@ const PassItem = ({ pass, setPass, deletePass }: PassItemProps) => {
         } else {
             setPass({ ...pass, price: 0 });
         }
+    }
+
+    const toggleIsReturnTicket = () => {
+        console.log(pass)
+        const isReturnTicket = !pass.isReturnTicket;
+        setPass({ ...pass, isReturnTicket });
     }
 
     return (
@@ -95,7 +110,7 @@ const PassItem = ({ pass, setPass, deletePass }: PassItemProps) => {
                                     exit={{ opacity: 0, x: -10 }}
                                 >
                                     <Button variant='outline' c="red" color='red'
-                                        onClick={() => deletePass()}
+                                        onClick={() => deletePass(pass)}
                                     >
                                         <MdDelete size="1.3rem" />
                                     </Button>
@@ -111,6 +126,12 @@ const PassItem = ({ pass, setPass, deletePass }: PassItemProps) => {
                             flex={1}
                             classNames={{ input: styles.inputInput }}
                             styles={{ input: { textAlign: 'right' } }}
+                        />
+                        <Checkbox icon={({ className }) => <RiArrowTurnForwardFill className={className} />}
+                            checked={pass.isReturnTicket}
+                            onChange={() => {
+                                toggleIsReturnTicket()
+                            }}
                         />
                     </Group>
                 </Stack>
