@@ -1,4 +1,4 @@
-import { AppShell, Flex, Text, Title } from '@mantine/core'
+import { AppShell, Flex, Title } from '@mantine/core'
 import './App.css'
 import PassView from './components/PassView'
 import CalendarView from './components/CalendarView'

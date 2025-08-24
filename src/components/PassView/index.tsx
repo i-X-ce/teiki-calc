@@ -1,4 +1,4 @@
-import { Button, Divider, ScrollArea, Stack, Text } from '@mantine/core'
+import { Button, Divider, Group, ScrollArea, Stack, Text } from '@mantine/core'
 import type Pass from '../../utils/Pass'
 import { createPassId } from '../../utils/Pass'
 import PassItem from '../PassItem'
@@ -7,11 +7,15 @@ import styles from './style.module.css'
 import { HEADER_HEIGHT } from '../../utils/constants'
 import { usePass } from '../PassProvider'
 import { useErrorModal } from '../ErrorModal'
+import { useState } from 'react'
+import { IoCard } from 'react-icons/io5'
+import { IoMdClose } from 'react-icons/io'
 
 
 const PassView = () => {
   const { passList, setPassList } = usePass();
   const { openError } = useErrorModal();
+  const [open, setOpen] = useState(true);
 
   const handleAddPass = () => {
     const newPass: Pass = {
@@ -64,33 +68,54 @@ const PassView = () => {
   }
 
   return (
-    <Stack p={"md"} bg={"green"} top={HEADER_HEIGHT} h={`calc(100vh - ${HEADER_HEIGHT}px)`} justify='space-between' className={styles.root}>
-      <Stack pos={"relative"}>
+    open ?
+      <Stack p={"md"} bg={"green"} top={HEADER_HEIGHT} h={`calc(100vh - ${HEADER_HEIGHT}px)`} justify='space-between' className={styles.root}
+        display={open ? undefined : "none"}
+      >
+        <Stack pos={"relative"}>
 
-        <Text c={"white"} size="lg">定期代</Text>
-        <Divider color='green.4' />
-        <ScrollArea className={styles.passItemListRoot} scrollbars="y">
-          <Stack >
-            <AnimatePresence>
-              {passList.map((pass) => (
-                <PassItem key={pass.id} pass={pass}
-                  setPass={handleSetPass}
-                  deletePass={handleDeletePass}
-                />
-              ))}
-            </AnimatePresence>
-          </Stack>
-        </ScrollArea>
-      </Stack>
+          <Group justify='space-between'>
+            <Text c={"white"} size="lg">定期代</Text>
+            <Button p={10} onClick={() => setOpen(!open)}>
+              <IoMdClose size={"1.2rem"} />
+            </Button>
+          </Group>
+          <Divider color='green.4' />
+          <ScrollArea className={styles.passItemListRoot} scrollbars="y">
+            <Stack >
+              <AnimatePresence>
+                {passList.map((pass) => (
+                  <PassItem key={pass.id} pass={pass}
+                    setPass={handleSetPass}
+                    deletePass={handleDeletePass}
+                  />
+                ))}
+              </AnimatePresence>
+            </Stack>
+          </ScrollArea>
+        </Stack>
 
-      <div className={styles.addButtonRoot}>
-        <Button variant='outline' color='white' flex={1}
-          onClick={handleAddPass}
-        >
-          追加+
-        </Button>
-      </div>
-    </Stack >
+        <div className={styles.addButtonRoot}>
+          <Button variant='outline' color='white' flex={1}
+            onClick={handleAddPass}
+          >
+            追加+
+          </Button>
+        </div>
+
+
+      </Stack >
+      :
+      <Button
+        variant="outline"
+        pos={"fixed"}
+        top={HEADER_HEIGHT + 10}
+        right={10}
+        bg={"white"}
+        onClick={() => setOpen(!open)}
+      >
+        <IoCard />
+      </Button>
   )
 }
 
