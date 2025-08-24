@@ -29,7 +29,7 @@ const DurationItem = ({ value, setValue, unit }: { value: number, setValue: (val
     }
 
     return (
-        <Group gap={"xs"}>
+        <Group gap={"xs"} pos={"relative"} className={styles.durationItemRoot}>
             <div className={styles.durationButtonsRoot} >
                 <button type='button' onClick={() => handleValueAdd(1)}><MdArrowDropUp /></button>
                 <button type='button' onClick={() => handleValueAdd(-1)}><MdArrowDropDown /></button>

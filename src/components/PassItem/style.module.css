@@ -13,9 +13,14 @@
 }
 
 .durationButtonsRoot {
+  position: absolute;
   display: flex;
   flex-direction: column;
   gap: 0;
+  z-index: 2;
+  left: 0;
+  opacity: 0;
+  transition: all 0.2s;
 
   > button {
     position: relative;
@@ -30,6 +35,13 @@
 
   > button:active {
     top: 1px;
+  }
+}
+
+.durationItemRoot:hover {
+  > .durationButtonsRoot {
+    left: 3px;
+    opacity: 1;
   }
 }
 
