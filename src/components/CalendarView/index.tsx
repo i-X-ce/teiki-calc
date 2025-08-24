@@ -27,33 +27,20 @@ function CalendarView() {
     const [selectedDays, setSelectedDays] = useState<Boolean[]>([true, false, false, false, false, false, true])
 
     // 初期化時に休日セットを作成するコールバック
-    const initHolidaysSet = useCallback((newStartEndDate: StartEndDateProps) => {
-        const newHolidaysSet = new Set<string>();
-        for (let currentDate = new Date(newStartEndDate.start);
-            currentDate <= newStartEndDate.end;
-            currentDate = addDays(currentDate, 1)) {
-            const dayIndex = currentDate.getDay();
-            if (selectedDays[dayIndex]) {
-                newHolidaysSet.add(currentDate.toDateString());
-            }
-        }
-        return newHolidaysSet;
-    }, [selectedDays])
     const initHolidaysSetList = useCallback((newStartEndDate: StartEndDateProps) => {
-        const newHlidaysSetList = Array.from({ length: monthDiff(newStartEndDate) }).map(() => new Set<string>());
+        const newHolidaysSetList = Array.from({ length: monthDiff(newStartEndDate) }).map(() => new Set<string>());
         for (let currentDate = new Date(newStartEndDate.start);
             currentDate <= newStartEndDate.end;
             currentDate = addDays(currentDate, 1)) {
             const dayIndex = currentDate.getDay();
             if (selectedDays[dayIndex]) {
                 const monthIndex = differenceInMonths(startOfMonth(currentDate), startOfMonth(newStartEndDate.start));
-                newHlidaysSetList[monthIndex].add(currentDate.toDateString());
+                newHolidaysSetList[monthIndex].add(currentDate.toDateString());
             }
         }
-        return newHlidaysSetList;
+        return newHolidaysSetList;
     }, [selectedDays])
     // 休日セットのstate
-    const [holidaysSet, setHolidaysSet] = useState<Set<string>>(initHolidaysSet(startEndDate))
     const [holidaysSetList, setHolidaysSetList] = useState<Set<string>[]>(initHolidaysSetList(startEndDate));
 
     // 計算結果のstate
@@ -88,7 +75,7 @@ function CalendarView() {
                 start: newStart,
                 end: newEnd
             }
-            setHolidaysSet(initHolidaysSet(newStartEndDate));
+            setHolidaysSetList(initHolidaysSetList(newStartEndDate));
             return newStartEndDate
         })
     }
@@ -97,19 +84,24 @@ function CalendarView() {
     const toggleDay = (index: number) => {
         setSelectedDays(prev => {
             const newDays = prev.map((_, i) => i === index ? !prev[i] : prev[i])
-            const newHolidaysSet = new Set(holidaysSet);
-            for (let currentDate = new Date(startEndDate.start);
-                currentDate <= startEndDate.end;
-                currentDate = addDays(currentDate, 1)) {
-                const dayIndex = currentDate.getDay();
-                if (dayIndex !== index) continue;
-                if (newDays[dayIndex]) {
-                    newHolidaysSet.add(currentDate.toDateString());
-                } else {
-                    newHolidaysSet.delete(currentDate.toDateString());
+            const newHolidaysSetList = Array.from({ length: holidaysSetList.length }).map((_, i) => holidaysSetList[i] ? new Set(holidaysSetList[i]) : new Set<string>());
+
+            for (let monthIndex = 0; monthIndex < newHolidaysSetList.length; monthIndex++) {
+                const monthStart = addMonths(startOfMonth(startEndDate.start), monthIndex);
+                const monthEnd = startOfMonth(addMonths(startEndDate.start, monthIndex + 1));
+                for (let currentDate = new Date(monthStart);
+                    currentDate < monthEnd && currentDate <= startEndDate.end;
+                    currentDate = addDays(currentDate, 1)) {
+                    const dayIndex = currentDate.getDay();
+                    if (dayIndex !== index) continue;
+                    if (newDays[dayIndex]) {
+                        newHolidaysSetList[monthIndex].add(currentDate.toDateString());
+                    } else {
+                        newHolidaysSetList[monthIndex].delete(currentDate.toDateString());
+                    }
                 }
             }
-            setHolidaysSet(newHolidaysSet);
+            setHolidaysSetList(newHolidaysSetList);
             return newDays;
         }
         )
@@ -137,7 +129,11 @@ function CalendarView() {
 
     // 計算ボタンのハンドラー
     const handleClickCalc = () => {
-        const result = fareCalculate(startEndDate.start, startEndDate.end, passList, holidaysSet)
+        const concatHolidaysSet = holidaysSetList.reduce((acc, set) => {
+            set.forEach(dateStr => acc.add(dateStr));
+            return acc;
+        }, new Set<string>());
+        const result = fareCalculate(startEndDate.start, startEndDate.end, passList, concatHolidaysSet)
         // fareCalculateTest()
         setCalcResult(result);
     }
