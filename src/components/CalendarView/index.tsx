@@ -3,14 +3,18 @@ import { addDays, addMonths, differenceInMonths, format, startOfDay, startOfMont
 import { useCallback, useState } from 'react'
 import CalendarUnit from '../CalendarUnit'
 import { usePass } from '../PassProvider'
-import fareCalculate, { fareCalculateTest } from '../../utils/fareCalculate'
 import FarePlanDetail from '../../utils/FarePlanDetail'
 import { IoIosCard } from 'react-icons/io'
 import { durationToString } from '../../utils/DateDuration'
+import fareCalculate from '../../utils/FareCalculate'
 
 type StartEndDateProps = {
     start: Date
     end: Date
+}
+
+const monthDiff = (startEndDate: StartEndDateProps) => {
+    return differenceInMonths(startOfMonth(startEndDate.end), startOfMonth(startEndDate.start)) + 1
 }
 
 function CalendarView() {
@@ -34,9 +38,23 @@ function CalendarView() {
             }
         }
         return newHolidaysSet;
-    }, [startEndDate])
+    }, [selectedDays])
+    const initHolidaysSetList = useCallback((newStartEndDate: StartEndDateProps) => {
+        const newHlidaysSetList = Array.from({ length: monthDiff(newStartEndDate) }).map(() => new Set<string>());
+        for (let currentDate = new Date(newStartEndDate.start);
+            currentDate <= newStartEndDate.end;
+            currentDate = addDays(currentDate, 1)) {
+            const dayIndex = currentDate.getDay();
+            if (selectedDays[dayIndex]) {
+                const monthIndex = differenceInMonths(startOfMonth(currentDate), startOfMonth(newStartEndDate.start));
+                newHlidaysSetList[monthIndex].add(currentDate.toDateString());
+            }
+        }
+        return newHlidaysSetList;
+    }, [selectedDays])
     // 休日セットのstate
     const [holidaysSet, setHolidaysSet] = useState<Set<string>>(initHolidaysSet(startEndDate))
+    const [holidaysSetList, setHolidaysSetList] = useState<Set<string>[]>(initHolidaysSetList(startEndDate));
 
     // 計算結果のstate
     const [calcResult, setCalcResult] = useState<FarePlanDetail[] | null>(null);
@@ -97,17 +115,25 @@ function CalendarView() {
         )
     }
 
-    const toggleDate = (date: Date) => {
-        setHolidaysSet(prev => {
-            const newHolidaysSet = new Set(prev);
-            if (newHolidaysSet.has(date.toDateString())) {
-                newHolidaysSet.delete(date.toDateString());
+    const handleToggleDay = useCallback((date: Date) => {
+        const monthIndex = differenceInMonths(startOfMonth(date), startOfMonth(startEndDate.start));
+        if (monthIndex < 0 || monthIndex >= holidaysSetList.length) {
+            return;
+        }
+        setHolidaysSetList(prev => prev.map((set, i) => {
+            if (i === monthIndex) {
+                const newSet = new Set(set);
+                if (newSet.has(date.toDateString())) {
+                    newSet.delete(date.toDateString());
+                } else {
+                    newSet.add(date.toDateString());
+                }
+                return newSet;
             } else {
-                newHolidaysSet.add(date.toDateString());
+                return set;
             }
-            return newHolidaysSet;
-        })
-    }
+        }))
+    }, [startEndDate])
 
     // 計算ボタンのハンドラー
     const handleClickCalc = () => {
@@ -158,7 +184,7 @@ function CalendarView() {
 
                 {/* カレンダー */}
                 <Group align='stretch'>
-                    {Array.from({ length: differenceInMonths(startOfMonth(startEndDate.end), startOfMonth(startEndDate.start)) + 1 }).map((_, i) => {
+                    {Array.from({ length: monthDiff(startEndDate) }).map((_, i) => {
                         const date = addMonths(startEndDate.start, i);
                         const month = date.getMonth() + 1;
                         const year = date.getFullYear();
@@ -168,8 +194,8 @@ function CalendarView() {
                             month={month}
                             start={startEndDate.start}
                             end={startEndDate.end}
-                            holidaysSet={holidaysSet}
-                            onClick={(date) => toggleDate(date)}
+                            holidaysSet={i < holidaysSetList.length ? holidaysSetList[i] : new Set()}
+                            onClick={handleToggleDay}
                         />
                     })}
                 </Group>
