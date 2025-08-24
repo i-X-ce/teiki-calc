@@ -11,7 +11,7 @@ import { useErrorModal } from '../ErrorModal'
 export type PassItemProps = {
     pass: Pass
     setPass: (pass: Pass) => void
-    deletePass: () => void
+    deletePass: (pass: Pass) => void
 }
 
 const DurationItem = ({ value, setValue, unit }: { value: number, setValue: (value: number) => void, unit: string }) => {
@@ -110,7 +110,7 @@ const PassItem = ({ pass, setPass, deletePass }: PassItemProps) => {
                                     exit={{ opacity: 0, x: -10 }}
                                 >
                                     <Button variant='outline' c="red" color='red'
-                                        onClick={() => deletePass()}
+                                        onClick={() => deletePass(pass)}
                                     >
                                         <MdDelete size="1.3rem" />
                                     </Button>

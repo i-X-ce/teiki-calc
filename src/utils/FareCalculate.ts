@@ -77,9 +77,11 @@ export default function fareCalculate(
   //     detail
   //       ? `${detail.getDate().toLocaleDateString()}: ${
   //           detail.getMinTotalAmount()?.amount
-  //         }, ${detail.getPurchasedPass()?.id}, purchasedDate: ${detail
-  //           .getPurchasedDate()
-  //           ?.toLocaleDateString()}`
+  //         }, ${detail.getPurchasedPass()?.id}, purchasedDate: ${
+  //           detail.isPurchased()
+  //             ? detail.getPurchasedDate()?.toLocaleDateString()
+  //             : "not purchased"
+  //         }`
   //       : ""
   //   )
   // );
