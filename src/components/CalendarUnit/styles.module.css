@@ -1,0 +1,9 @@
+.dateGridCol {
+  padding: 5px;
+}
+
+@media (max-width: 640px) {
+  .dateGridCol {
+    padding: 2px;
+  }
+}

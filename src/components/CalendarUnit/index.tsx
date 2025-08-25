@@ -1,6 +1,7 @@
 import { Button, Grid, GridCol, Paper, Stack, Text } from "@mantine/core";
 import { isAfter, isBefore, startOfDay } from "date-fns";
 import { memo, useMemo } from "react";
+import styles from './styles.module.css'
 
 export type CalendarUnitProps = {
     year: number;
@@ -29,7 +30,7 @@ const CalendarUnit = memo(({ year, month, start, end, holidaysSet, onClick }: Ca
                     <Text size="sm">{year}年</Text>
                     <Text size="xl">{month}月</Text>
                 </Stack>
-                <Grid columns={7}>
+                <Grid columns={7} >
                     {
                         ["日", "月", "火", "水", "木", "金", "土"].map((day, i) => (
                             <GridCol key={i} span={1}>
@@ -43,7 +44,9 @@ const CalendarUnit = memo(({ year, month, start, end, holidaysSet, onClick }: Ca
                         ))
                     }
                     {days.map((day, index) => (
-                        <GridCol key={index} span={1}>
+                        <GridCol key={index} span={1}
+                            className={styles.dateGridCol}
+                        >
                             <Button
                                 disabled={
                                     isBefore(startOfDay(day), startOfDay(start)) ||

@@ -70,6 +70,7 @@ const PassView = () => {
   return (
     open ?
       <Stack p={"md"} bg={"green"} top={HEADER_HEIGHT} h={`calc(100vh - ${HEADER_HEIGHT}px)`} justify='space-between' className={styles.root}
+
         display={open ? undefined : "none"}
       >
         <Stack pos={"relative"}>
