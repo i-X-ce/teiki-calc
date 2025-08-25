@@ -7,7 +7,6 @@ import FarePlanDetail from '../../utils/FarePlanDetail'
 import { IoIosCard } from 'react-icons/io'
 import { durationToString } from '../../utils/DateDuration'
 import fareCalculate from '../../utils/FareCalculate'
-import styles from './styles.module.css'
 
 type StartEndDateProps = {
     start: Date
@@ -175,7 +174,7 @@ function CalendarView() {
                     </Group>
                     <Stack gap={"1px"}>
                         <Text size='sm'>通勤日</Text>
-                        <Group className={styles.daysGroup}>
+                        <Group gap={"5px"}>
                             {selectedDays.map((isSelected, i) => (
                                 <Button
                                     key={i}

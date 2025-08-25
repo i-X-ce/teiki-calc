@@ -1,9 +1,0 @@
-.daysGroup {
-  gap: 10px;
-}
-
-@media (max-width: 640px) {
-  .daysGroup {
-    gap: 5px;
-  }
-}
