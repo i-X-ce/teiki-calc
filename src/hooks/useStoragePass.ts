@@ -20,6 +20,7 @@ const useStoragePass = () => {
         const parsedPassList: Pass[] = JSON.parse(storedPassList);
         setPassList(parsedPassList);
       } catch (error) {
+        setStoragePass(INIT_PASS);
         console.error("Failed to parse pass list from localStorage:", error);
       }
     }
