@@ -1,19 +1,19 @@
-import { Button, Divider, Group, ScrollArea, Stack, Text } from '@mantine/core'
+import { Button, Divider, Flex, Group, ScrollArea, Stack, Text } from '@mantine/core'
 import type Pass from '../../utils/Pass'
 import { createPassId } from '../../utils/Pass'
 import PassItem from '../PassItem'
 import { AnimatePresence } from 'motion/react'
 import styles from './style.module.css'
 import { HEADER_HEIGHT } from '../../utils/constants'
-import { usePass } from '../PassProvider'
 import { useErrorModal } from '../ErrorModal'
 import { useState } from 'react'
-import { IoCard } from 'react-icons/io5'
+import { IoCard, IoReload } from 'react-icons/io5'
 import { IoMdClose } from 'react-icons/io'
+import useStoragePass from '../../hooks/useStoragePass'
 
 
 const PassView = () => {
-  const { passList, setPassList } = usePass();
+  const { passList, setStoragePass, resetStoragePass } = useStoragePass();
   const { openError } = useErrorModal();
   const [open, setOpen] = useState(true);
 
@@ -28,7 +28,7 @@ const PassView = () => {
       price: 1000,
       isReturnTicket: false
     }
-    setPassList((prev) => [...prev, newPass]);
+    setStoragePass([...passList, newPass]);
   }
 
   const handleSetPass = (pass: Pass) => {
@@ -37,7 +37,7 @@ const PassView = () => {
       openNotHas1DayPass();
       return;
     }
-    setPassList((prev) => prev.map(p => p.id === pass.id ? pass : p));
+    setStoragePass(passList.map(p => p.id === pass.id ? pass : p));
   }
 
   const handleDeletePass = (pass: Pass) => {
@@ -56,7 +56,7 @@ const PassView = () => {
     }
 
     // 問題なければ削除実行
-    setPassList(newList);
+    setStoragePass(newList);
   }
 
   const has1DayPass = (updatePassList: Pass[]) => {
@@ -96,13 +96,17 @@ const PassView = () => {
           </ScrollArea>
         </Stack>
 
-        <div className={styles.addButtonRoot}>
+        <Flex>
+          <Button onClick={resetStoragePass}>
+            <IoReload size={"1.2rem"} />
+          </Button>
           <Button variant='outline' color='white' flex={1}
             onClick={handleAddPass}
+            fullWidth
           >
             追加+
           </Button>
-        </div>
+        </Flex>
 
 
       </Stack >

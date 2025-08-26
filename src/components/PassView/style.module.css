@@ -13,10 +13,6 @@
   overflow: auto;
 }
 
-.addButtonRoot {
-  display: flex;
-}
-
 @media (max-width: 1024px) {
   .root {
     position: fixed;
