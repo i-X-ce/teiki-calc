@@ -44,7 +44,7 @@ export default function fareCalculate(
     // よりコストが低いならコピーしないようにしとく
     if (isHoliday && i > 0) {
       if (
-        (FarePlans[i - 1].getMinTotalAmount()?.amount || 0) <=
+        (FarePlans[i - 1].getMinTotalAmount()?.amount || 0) <
         (currentFarePlan.getMinTotalAmount()?.amount || 0)
       ) {
         currentFarePlan.copyTotalAmountMap(FarePlans[i - 1]);
@@ -64,7 +64,7 @@ export default function fareCalculate(
 
       if (
         nextDate > endDate &&
-        nextAmount < (overFarePlan?.getMinTotalAmount()?.amount || Infinity)
+        nextAmount <= (overFarePlan?.getMinTotalAmount()?.amount || Infinity)
       ) {
         overFarePlan = nextFarePlan;
       }
@@ -72,21 +72,21 @@ export default function fareCalculate(
     }
   }
 
-  // console.log(
-  //   [...Object.values(resultMap), overFarePlan].map((detail) =>
-  //     detail
-  //       ? `${detail.getDate().toLocaleDateString()}: ${
-  //           detail.getMinTotalAmount()?.amount
-  //         }, ${detail.getPurchasedPass()?.id}, purchasedDate: ${
-  //           detail.isPurchased()
-  //             ? detail.getPurchasedDate()?.toLocaleDateString()
-  //             : "not purchased"
-  //         }`
-  //       : ""
-  //   )
-  // );
+  console.log(
+    [...Object.values(resultMap), overFarePlan].map((detail) =>
+      detail
+        ? `${detail.getDate().toLocaleDateString()}: ${
+            detail.getMinTotalAmount()?.amount
+          }, ${detail.getPurchasedPass()?.id}, purchasedDate: ${
+            detail.isPurchased()
+              ? detail.getPurchasedDate()?.toLocaleDateString()
+              : "not purchased"
+          }`
+        : ""
+    )
+  );
 
-  // console.log([...Object.values(resultMap), overFarePlan]);
+  console.log([...Object.values(resultMap), overFarePlan]);
 
   let purchaseList: FarePlanDetail[] = [];
   for (
@@ -98,7 +98,7 @@ export default function fareCalculate(
         const lastMinAmount = lastResult.getMinTotalAmount();
         const overMinAmount = overFarePlan.getMinTotalAmount();
         if (!lastMinAmount || !overMinAmount) return endDate;
-        if (overMinAmount.amount < lastMinAmount.amount) {
+        if (overMinAmount.amount <= lastMinAmount.amount) {
           return overFarePlan.getDate();
         } else {
           return endDate;
