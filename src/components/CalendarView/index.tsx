@@ -226,7 +226,7 @@ function CalendarView() {
                         })}
                     </Group>
 
-                    <Box pos={"sticky"} bottom={0} p={"md"} bg={"white"} >
+                    <Box pos={"sticky"} bottom={0} py={"md"}>
                         <Button
                             variant='gradient'
                             gradient={{ from: "green.6", to: "green.8" }}
