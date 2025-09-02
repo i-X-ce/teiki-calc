@@ -288,8 +288,13 @@ function CalendarView() {
             </>
         )
     } catch (error) {
-        return <div>エラーが発生しました: {(error as Error).message}
-            <Button onClick={handleAllReset}>すべてをリセット</Button>
+        return <div>
+            <Stack p={"md"}>
+                <Text>
+                    エラーが発生しました: {(error as Error).message}
+                </Text>
+                <Button onClick={handleAllReset}>すべてをリセット</Button>
+            </Stack>
         </div>
     }
 }

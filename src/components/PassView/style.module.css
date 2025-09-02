@@ -1,6 +1,7 @@
 .root {
-  position: sticky;
+  position: fixed;
   overflow: hidden;
+  right: 0;
 }
 
 .titleRoot {
@@ -11,11 +12,4 @@
 .passItemListRoot {
   height: calc(100vh - 250px);
   overflow: auto;
-}
-
-@media (max-width: 1024px) {
-  .root {
-    position: fixed;
-    right: 0;
-  }
 }
