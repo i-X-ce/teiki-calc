@@ -7,6 +7,7 @@ import FarePlanDetail from '../../utils/FarePlanDetail'
 import { IoIosCard } from 'react-icons/io'
 import { durationToString } from '../../utils/DateDuration'
 import fareCalculate from '../../utils/FareCalculate'
+import useStorage from '../../hooks/useStorage'
 
 type StartEndDateProps = {
     start: Date
@@ -19,12 +20,19 @@ const monthDiff = (startEndDate: StartEndDateProps) => {
 
 function CalendarView() {
     // 開始日と終了日
-    const [startEndDate, setStartEndDate] = useState<StartEndDateProps>({
+    const [startEndDate, setStartEndDate] = useStorage<StartEndDateProps>("startEndDataProps", {
         start: new Date(startOfDay(Date.now())),
         end: new Date(startOfDay(addMonths(Date.now(), 6))) // 6か月後,
+    }, {
+        toString: (value) => `${value.start.toDateString()}|${value.end.toDateString()}`, fromString: (value) => {
+            const [startStr, endStr] = value.split("|");
+            return {
+                start: new Date(startStr), end: new Date(endStr)
+            }
+        }
     })
     // 通勤日
-    const [selectedDays, setSelectedDays] = useState<Boolean[]>([true, false, false, false, false, false, true])
+    const [selectedDays, setSelectedDays] = useStorage<Boolean[]>("selectedDays", [true, false, false, false, false, false, true])
 
     // 初期化時に休日セットを作成するコールバック
     const initHolidaysSetList = useCallback((newStartEndDate: StartEndDateProps) => {
@@ -41,7 +49,10 @@ function CalendarView() {
         return newHolidaysSetList;
     }, [selectedDays])
     // 休日セットのstate
-    const [holidaysSetList, setHolidaysSetList] = useState<Set<string>[]>(initHolidaysSetList(startEndDate));
+    const [holidaysSetList, setHolidaysSetList] = useStorage<Set<string>[]>("holidaysSetList", initHolidaysSetList(startEndDate), {
+        toString: (value) => value.map(set => Array.from(set).join(",")).join("|"),
+        fromString: (value) => value.split("|").map(str => new Set(str ? str.split(",") : []))
+    });
 
     // 計算結果のstate
     const [calcResult, setCalcResult] = useState<FarePlanDetail[] | null>(null);
@@ -50,7 +61,7 @@ function CalendarView() {
     const { passList } = usePass();
 
     // 変更があったか
-    const [dirty, setDirty] = useState(false);
+    const [dirty, setDirty] = useStorage("dirty", false);
 
     // ----- イベントハンドラー -----
 
@@ -139,6 +150,11 @@ function CalendarView() {
         setDirty(true);
     }, [startEndDate])
 
+    const handleAllReset = useCallback(() => {
+        window.localStorage.clear();
+        window.location.reload();
+    }, [])
+
     // 計算ボタンのハンドラー
     const handleClickCalc = () => {
         const concatHolidaysSet = holidaysSetList.reduce((acc, set) => {
@@ -150,126 +166,137 @@ function CalendarView() {
         setCalcResult(result);
     }
 
-    return (
-        <>
-            <Stack p={"md"} flex={1}>
-                {/* Tool Box */}
-                <Group gap={"lg"}>
-                    <Group align='end'>
-                        <InputWrapper label="開始日" >
-                            <Input type='date'
-                                value={format(startEndDate.start, "yyyy-MM-dd")}
-                                max={format(startEndDate.end, "yyyy-MM-dd")}
-                                onChange={(e) => handleStartEndDateChange(e, "start")}
-                            />
-                        </InputWrapper>
-                        <Text my={"xs"}>~</Text>
-                        <InputWrapper label="終了日" >
-                            <Input type='date'
-                                value={format(startEndDate.end, "yyyy-MM-dd")}
-                                min={format(startEndDate.start, "yyyy-MM-dd")}
-                                onChange={(e) => handleStartEndDateChange(e, "end")}
-                            />
-                        </InputWrapper>
-                    </Group>
-                    <Stack gap={"1px"}>
-                        <Text size='sm'>通勤日</Text>
-                        <Group gap={"5px"}>
-                            {selectedDays.map((isSelected, i) => (
-                                <Button
-                                    key={i}
-                                    variant={isSelected ? 'outline' : 'filled'}
-                                    onClick={() => toggleDay(i)}
-                                    size='xs'
-                                >
-                                    {['日', '月', '火', '水', '木', '金', '土'][i]}
-                                </Button>
-                            ))}
+    try {
+        return (
+            <>
+                <Stack p={"md"} flex={1}>
+                    {/* Tool Box */}
+                    <Group gap={"lg"}>
+                        <Group align='end'>
+                            <InputWrapper label="開始日" >
+                                <Input type='date'
+                                    value={format(startEndDate.start, "yyyy-MM-dd")}
+                                    max={format(startEndDate.end, "yyyy-MM-dd")}
+                                    onChange={(e) => handleStartEndDateChange(e, "start")}
+                                />
+                            </InputWrapper>
+                            <Text my={"xs"}>~</Text>
+                            <InputWrapper label="終了日" >
+                                <Input type='date'
+                                    value={format(startEndDate.end, "yyyy-MM-dd")}
+                                    min={format(startEndDate.start, "yyyy-MM-dd")}
+                                    onChange={(e) => handleStartEndDateChange(e, "end")}
+                                />
+                            </InputWrapper>
                         </Group>
-                    </Stack>
-                </Group>
-
-                <Divider />
-
-                {/* カレンダー */}
-                <Group align='stretch'>
-                    {Array.from({ length: monthDiff(startEndDate) }).map((_, i) => {
-                        const date = addMonths(startEndDate.start, i);
-                        const month = date.getMonth() + 1;
-                        const year = date.getFullYear();
-                        return <CalendarUnit
-                            key={i}
-                            year={year}
-                            month={month}
-                            start={startEndDate.start}
-                            end={startEndDate.end}
-                            holidaysSet={i < holidaysSetList.length ? holidaysSetList[i] : new Set()}
-                            onClick={handleToggleDate}
-                        />
-                    })}
-                </Group>
-
-                <Box pos={"sticky"} bottom={0} p={"md"} bg={"white"} >
-                    <Button
-                        variant='gradient'
-                        gradient={{ from: "green.6", to: "green.8" }}
-                        size='lg'
-                        fullWidth
-                        onClick={handleClickCalc}
-                    >
-                        計算
-                    </Button>
-                </Box>
-            </Stack>
-            <Modal title="計算結果" opened={Boolean(calcResult)} onClose={() => setCalcResult(null)}>
-                {calcResult && calcResult.length > 0 && (
-                    <Stack>
-                        <Timeline active={calcResult.length} lineWidth={2} bulletSize={24} >
-                            {calcResult.map((detail, i) => {
-                                const pass = passList.find(p => p.id === detail.getPurchasedPass()?.id);
-                                if (!pass) return null;
-
-                                return (
-                                    <TimelineItem
+                        <Stack gap={"1px"}>
+                            <Text size='sm'>通勤日</Text>
+                            <Group gap={"5px"}>
+                                {selectedDays.map((isSelected, i) => (
+                                    <Button
                                         key={i}
-                                        bullet={<IoIosCard />}
-                                        title={`${durationToString(pass.duration)}購入`}
+                                        variant={isSelected ? 'outline' : 'filled'}
+                                        onClick={() => toggleDay(i)}
+                                        size='xs'
                                     >
-                                        <Group>
-                                            <Text c={"dimmed"} size='sm'>
-                                                {`${detail.getPurchasedDate(true)?.toLocaleDateString()} - ${detail.getDate().toLocaleDateString()}`}
-                                            </Text>
-                                        </Group>
-                                        <Group>
-                                            <Text size='sm'>
-                                                {`合計: ${detail.getMinTotalAmount()?.amount}円`}
-                                            </Text>
-                                            <Text c={"green"} size='sm'>
-                                                + {pass.price}円{pass.isReturnTicket ? " × 2" : ""}
-                                            </Text>
-                                        </Group>
-                                    </TimelineItem>
-                                )
-                            })}
-                        </Timeline>
-                        <Divider />
-                        <Group align='end' pos={"sticky"} p={"md"} bottom={0} bg={"white"}>
-                            <Title order={3}>
-                                合計金額:
-                            </Title>
-                            <Title order={2} c={"green"}>
-                                {calcResult[calcResult.length - 1]?.getMinTotalAmount()?.amount || 0}
-                            </Title>
-                            <Title order={3}>
-                                円
-                            </Title>
-                        </Group>
-                    </Stack>
-                )
-                }
-            </Modal>
-        </>
-    )
+                                        {['日', '月', '火', '水', '木', '金', '土'][i]}
+                                    </Button>
+                                ))}
+                            </Group>
+                        </Stack>
+                    </Group>
+
+                    <Divider />
+
+                    {/* カレンダー */}
+                    <Group align='stretch'>
+                        {Array.from({ length: monthDiff(startEndDate) }).map((_, i) => {
+                            const date = addMonths(startEndDate.start, i);
+                            const month = date.getMonth() + 1;
+                            const year = date.getFullYear();
+                            return <CalendarUnit
+                                key={i}
+                                year={year}
+                                month={month}
+                                start={startEndDate.start}
+                                end={startEndDate.end}
+                                holidaysSet={i < holidaysSetList.length ? holidaysSetList[i] : new Set()}
+                                onClick={handleToggleDate}
+                            />
+                        })}
+                    </Group>
+
+                    <Box pos={"sticky"} bottom={0} py={"md"}>
+                        <Button
+                            variant='gradient'
+                            gradient={{ from: "green.6", to: "green.8" }}
+                            size='lg'
+                            fullWidth
+                            onClick={handleClickCalc}
+                        >
+                            計算
+                        </Button>
+                    </Box>
+                </Stack>
+                <Modal title="計算結果" opened={Boolean(calcResult)} onClose={() => setCalcResult(null)}>
+                    {calcResult && calcResult.length > 0 && (
+                        <Stack>
+                            <Timeline active={calcResult.length} lineWidth={2} bulletSize={24} >
+                                {calcResult.map((detail, i) => {
+                                    const pass = passList.find(p => p.id === detail.getPurchasedPass()?.id);
+                                    if (!pass) return null;
+
+                                    return (
+                                        <TimelineItem
+                                            key={i}
+                                            bullet={<IoIosCard />}
+                                            title={`${durationToString(pass.duration)}購入`}
+                                        >
+                                            <Group>
+                                                <Text c={"dimmed"} size='sm'>
+                                                    {`${detail.getPurchasedDate(true)?.toLocaleDateString()} - ${detail.getDate().toLocaleDateString()}`}
+                                                </Text>
+                                            </Group>
+                                            <Group>
+                                                <Text size='sm'>
+                                                    {`合計: ${detail.getMinTotalAmount()?.amount}円`}
+                                                </Text>
+                                                <Text c={"green"} size='sm'>
+                                                    + {pass.price}円{pass.isReturnTicket ? " × 2" : ""}
+                                                </Text>
+                                            </Group>
+                                        </TimelineItem>
+                                    )
+                                })}
+                            </Timeline>
+                            <Divider />
+                            <Group align='end' pos={"sticky"} p={"md"} bottom={0} bg={"white"}>
+                                <Title order={3}>
+                                    合計金額:
+                                </Title>
+                                <Title order={2} c={"green"}>
+                                    {calcResult[calcResult.length - 1]?.getMinTotalAmount()?.amount || 0}
+                                </Title>
+                                <Title order={3}>
+                                    円
+                                </Title>
+                            </Group>
+                        </Stack>
+                    )
+                    }
+                </Modal>
+            </>
+        )
+    } catch (error) {
+        return <div>
+            <Stack p={"md"}>
+                <Text>
+                    エラーが発生しました: {(error as Error).message}
+                </Text>
+                <Button onClick={handleAllReset}>すべてをリセット</Button>
+            </Stack>
+        </div>
+    }
 }
 
 export default CalendarView
