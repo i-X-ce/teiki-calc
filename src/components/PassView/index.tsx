@@ -96,7 +96,7 @@ const PassView = () => {
           </ScrollArea>
         </Stack>
 
-        <Flex>
+        <Flex bottom={"md"}>
           <Button onClick={resetStoragePass}>
             <IoReload size={"1.2rem"} />
           </Button>
